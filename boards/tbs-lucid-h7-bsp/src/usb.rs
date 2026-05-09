@@ -1,5 +1,6 @@
 use embassy_usb::Builder;
-use embassy_usb::class::cdc_acm::{CdcAcmClass, State};
+use embassy_usb::class::cdc_acm::CdcAcmClass;
+use embassy_usb::class::cdc_acm::State;
 
 use crate::hal;
 use crate::interrupts::UsbFsIrqs;
@@ -54,8 +55,14 @@ impl<'d> UsbParts<'d> {
         let mut usb_cfg = hal::usb::Config::default();
         usb_cfg.vbus_detection = cfg.vbus_detection;
 
-        let driver =
-            hal::usb::Driver::new_fs(self.otg_fs, UsbFsIrqs, self.dp, self.dm, bufs.ep_out, usb_cfg);
+        let driver = hal::usb::Driver::new_fs(
+            self.otg_fs,
+            UsbFsIrqs,
+            self.dp,
+            self.dm,
+            bufs.ep_out,
+            usb_cfg,
+        );
 
         let mut device_cfg = embassy_usb::Config::new(cfg.vid, cfg.pid);
         device_cfg.manufacturer = cfg.manufacturer;

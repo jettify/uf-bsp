@@ -1,8 +1,16 @@
 use crate::hal;
-use crate::hal::rcc::{
-    AHBPrescaler, APBPrescaler, Hse, HseMode, Pll, PllDiv, PllMul, PllPreDiv, PllSource, Sysclk,
-    TimerPrescaler, VoltageScale,
-};
+use crate::hal::rcc::AHBPrescaler;
+use crate::hal::rcc::APBPrescaler;
+use crate::hal::rcc::Hse;
+use crate::hal::rcc::HseMode;
+use crate::hal::rcc::Pll;
+use crate::hal::rcc::PllDiv;
+use crate::hal::rcc::PllMul;
+use crate::hal::rcc::PllPreDiv;
+use crate::hal::rcc::PllSource;
+use crate::hal::rcc::Sysclk;
+use crate::hal::rcc::TimerPrescaler;
+use crate::hal::rcc::VoltageScale;
 use crate::hal::time::Hertz;
 
 pub fn config() -> hal::Config {

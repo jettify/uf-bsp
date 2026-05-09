@@ -1,7 +1,11 @@
 use crate::hal;
-use crate::parts::{
-    AdcParts, ImuPrimaryParts, ImuSecondaryParts, Leds, MotorParts, ReceiverParts, UsbParts,
-};
+use crate::parts::AdcParts;
+use crate::parts::ImuPrimaryParts;
+use crate::parts::ImuSecondaryParts;
+use crate::parts::Leds;
+use crate::parts::MotorParts;
+use crate::parts::ReceiverParts;
+use crate::parts::UsbParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,

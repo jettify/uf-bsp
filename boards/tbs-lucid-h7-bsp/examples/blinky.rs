@@ -1,8 +1,11 @@
 #![no_std]
 #![no_main]
 
-use bsp::hal::gpio::{Level, Output, Speed};
-use embassy_time::{Duration, Timer};
+use bsp::hal::gpio::Level;
+use bsp::hal::gpio::Output;
+use bsp::hal::gpio::Speed;
+use embassy_time::Duration;
+use embassy_time::Timer;
 use panic_halt as _;
 use tbs_lucid_h7_bsp as bsp;
 

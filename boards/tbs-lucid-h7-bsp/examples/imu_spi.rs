@@ -4,11 +4,15 @@
 use bsp::hal::bind_interrupts;
 use bsp::hal::dma;
 use bsp::hal::exti;
-use bsp::hal::gpio::{Level, Output, Pull, Speed};
+use bsp::hal::gpio::Level;
+use bsp::hal::gpio::Output;
+use bsp::hal::gpio::Pull;
+use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
 use bsp::hal::peripherals;
 use bsp::hal::spi;
-use embassy_time::{Duration, Timer};
+use embassy_time::Duration;
+use embassy_time::Timer;
 use panic_halt as _;
 use tbs_lucid_h7_bsp as bsp;
 
@@ -41,7 +45,12 @@ async fn main(_spawner: embassy_executor::Spawner) {
     );
 
     let mut cs = Output::new(board.imu_primary.cs, Level::High, Speed::Low);
-    let mut drdy = exti::ExtiInput::new(board.imu_primary.int, board.imu_primary.int_exti, Pull::None, Irqs);
+    let mut drdy = exti::ExtiInput::new(
+        board.imu_primary.int,
+        board.imu_primary.int_exti,
+        Pull::None,
+        Irqs,
+    );
 
     loop {
         drdy.wait_for_rising_edge().await;
