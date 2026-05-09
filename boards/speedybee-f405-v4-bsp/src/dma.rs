@@ -2,7 +2,7 @@ use crate::hal;
 
 pub struct Spi1Dma<'d> {
     pub tx: hal::Peri<'d, hal::peripherals::DMA2_CH3>,
-    pub rx: hal::Peri<'d, hal::peripherals::DMA2_CH0>,
+    pub rx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH0>>,
 }
 
 pub struct Spi2Dma<'d> {
@@ -30,4 +30,10 @@ pub struct DmaResources<'d> {
     pub spi3: Spi3Dma<'d>,
     pub adc1: Adc1Dma<'d>,
     pub usart2: Usart2Dma<'d>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum DmaLayout {
+    ImuSpiPreferred,
+    Adc1Preferred,
 }

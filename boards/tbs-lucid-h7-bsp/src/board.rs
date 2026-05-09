@@ -121,6 +121,7 @@ impl<'d> Board<'d> {
                 servo1: p.PE5,
                 servo2: p.PE6,
                 led_strip: p.PA8,
+                beeper: p.PA15,
                 pinio1: p.PD10,
                 pinio2: p.PD11,
                 pinio3: p.PC13,

@@ -91,6 +91,7 @@ pub struct AuxParts<'d> {
     pub servo1: hal::Peri<'d, pins::Servo1>,
     pub servo2: hal::Peri<'d, pins::Servo2>,
     pub led_strip: hal::Peri<'d, pins::LedStrip>,
+    pub beeper: hal::Peri<'d, pins::Beeper>,
     pub pinio1: hal::Peri<'d, pins::Pinio1>,
     pub pinio2: hal::Peri<'d, pins::Pinio2>,
     pub pinio3: hal::Peri<'d, pins::Pinio3>,

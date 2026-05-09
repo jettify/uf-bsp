@@ -1,4 +1,5 @@
 use crate::dma::Adc1Dma;
+use crate::dma::DmaLayout;
 use crate::dma::DmaResources;
 use crate::dma::Spi1Dma;
 use crate::dma::Spi2Dma;
@@ -6,12 +7,15 @@ use crate::dma::Spi3Dma;
 use crate::dma::Usart2Dma;
 use crate::hal;
 use crate::parts::AdcParts;
+use crate::parts::AuxParts;
+use crate::parts::I2cParts;
 use crate::parts::ImuPrimaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
 use crate::parts::OsdParts;
 use crate::parts::ReceiverParts;
 use crate::parts::SdcardSpiParts;
+use crate::parts::UartPortsParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
@@ -19,6 +23,9 @@ pub struct Board<'d> {
     pub osd: OsdParts<'d>,
     pub sdcard_spi: SdcardSpiParts<'d>,
     pub receiver: ReceiverParts<'d>,
+    pub uarts: UartPortsParts<'d>,
+    pub i2c: I2cParts<'d>,
+    pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
     pub dma: DmaResources<'d>,
@@ -26,6 +33,15 @@ pub struct Board<'d> {
 
 impl<'d> Board<'d> {
     pub fn new(p: hal::Peripherals) -> Self {
+        Self::new_with_dma_layout(p, DmaLayout::ImuSpiPreferred)
+    }
+
+    pub fn new_with_dma_layout(p: hal::Peripherals, layout: DmaLayout) -> Self {
+        let (spi1_rx_dma, adc1_dma) = match layout {
+            DmaLayout::ImuSpiPreferred => (Some(p.DMA2_CH0), None),
+            DmaLayout::Adc1Preferred => (None, Some(p.DMA2_CH0)),
+        };
+
         Self {
             leds: Leds { led0: p.PC13 },
             imu_primary: ImuPrimaryParts {
@@ -56,6 +72,34 @@ impl<'d> Board<'d> {
                 tx: p.PA2,
                 rx: p.PA3,
             },
+            uarts: UartPortsParts {
+                uart1: p.USART1,
+                uart1_tx: p.PA9,
+                uart1_rx: p.PA10,
+                uart3: p.USART3,
+                uart3_tx: p.PC10,
+                uart3_rx: p.PC11,
+                uart4: p.UART4,
+                uart4_tx: p.PA0,
+                uart4_rx: p.PA1,
+                uart5: p.UART5,
+                uart5_rx: p.PD2,
+                uart6: p.USART6,
+                uart6_tx: p.PC6,
+                uart6_rx: p.PC7,
+            },
+            i2c: I2cParts {
+                i2c1: p.I2C1,
+                i2c1_scl: p.PB8,
+                i2c1_sda: p.PB9,
+            },
+            aux: AuxParts {
+                beeper: p.PC15,
+                servo1: p.PB15,
+                led_strip: p.PA8,
+                camera_control: p.PB14,
+                pinio1: p.PB11,
+            },
             motors: MotorParts {
                 m1: p.PB6,
                 m2: p.PB7,
@@ -75,7 +119,7 @@ impl<'d> Board<'d> {
             dma: DmaResources {
                 spi1: Spi1Dma {
                     tx: p.DMA2_CH3,
-                    rx: p.DMA2_CH0,
+                    rx: spi1_rx_dma,
                 },
                 spi2: Spi2Dma {
                     tx: p.DMA1_CH4,
@@ -85,7 +129,7 @@ impl<'d> Board<'d> {
                     tx: p.DMA1_CH5,
                     rx: p.DMA1_CH0,
                 },
-                adc1: Adc1Dma { ch: None },
+                adc1: Adc1Dma { ch: adc1_dma },
                 usart2: Usart2Dma { tx: None, rx: None },
             },
         }

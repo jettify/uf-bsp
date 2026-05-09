@@ -37,7 +37,11 @@ async fn main(_spawner: embassy_executor::Spawner) {
         board.imu_primary.mosi,
         board.imu_primary.miso,
         board.dma.spi1.tx,
-        board.dma.spi1.rx,
+        board
+            .dma
+            .spi1
+            .rx
+            .expect("SPI1 RX DMA unavailable in Adc1Preferred layout"),
         Irqs,
         spi_cfg,
     );

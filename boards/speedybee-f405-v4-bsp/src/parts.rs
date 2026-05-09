@@ -37,6 +37,29 @@ pub struct ReceiverParts<'d> {
     pub rx: hal::Peri<'d, pins::ReceiverRx>,
 }
 
+pub struct UartPortsParts<'d> {
+    pub uart1: hal::Peri<'d, hal::peripherals::USART1>,
+    pub uart1_tx: hal::Peri<'d, pins::Uart1Tx>,
+    pub uart1_rx: hal::Peri<'d, pins::Uart1Rx>,
+    pub uart3: hal::Peri<'d, hal::peripherals::USART3>,
+    pub uart3_tx: hal::Peri<'d, pins::Uart3Tx>,
+    pub uart3_rx: hal::Peri<'d, pins::Uart3Rx>,
+    pub uart4: hal::Peri<'d, hal::peripherals::UART4>,
+    pub uart4_tx: hal::Peri<'d, pins::Uart4Tx>,
+    pub uart4_rx: hal::Peri<'d, pins::Uart4Rx>,
+    pub uart5: hal::Peri<'d, hal::peripherals::UART5>,
+    pub uart5_rx: hal::Peri<'d, pins::Uart5Rx>,
+    pub uart6: hal::Peri<'d, hal::peripherals::USART6>,
+    pub uart6_tx: hal::Peri<'d, pins::Uart6Tx>,
+    pub uart6_rx: hal::Peri<'d, pins::Uart6Rx>,
+}
+
+pub struct I2cParts<'d> {
+    pub i2c1: hal::Peri<'d, hal::peripherals::I2C1>,
+    pub i2c1_scl: hal::Peri<'d, pins::I2c1Scl>,
+    pub i2c1_sda: hal::Peri<'d, pins::I2c1Sda>,
+}
+
 pub struct MotorParts<'d> {
     pub m1: hal::Peri<'d, pins::Motor1>,
     pub m2: hal::Peri<'d, pins::Motor2>,
@@ -53,4 +76,12 @@ pub struct AdcParts<'d> {
     pub vbat: hal::Peri<'d, pins::VbatAdc>,
     pub current: hal::Peri<'d, pins::CurrentAdc>,
     pub rssi: hal::Peri<'d, pins::RssiAdc>,
+}
+
+pub struct AuxParts<'d> {
+    pub beeper: hal::Peri<'d, pins::Beeper>,
+    pub servo1: hal::Peri<'d, pins::Servo1>,
+    pub led_strip: hal::Peri<'d, pins::LedStrip>,
+    pub camera_control: hal::Peri<'d, pins::CameraControl>,
+    pub pinio1: hal::Peri<'d, pins::Pinio1>,
 }
