@@ -5,7 +5,7 @@ edition = "2024"
 
 [dependencies]
 defmt = { workspace = true, optional = true }
-embassy-stm32 = { workspace = true, features = ["stm32h743zi", "time-driver-any"] }
+embassy-stm32 = { workspace = true, features = ["stm32h743zi", "time-driver-any", "exti"] }
 embassy-usb = "0.6.0"
 stm32-metapac = { workspace = true }
 
@@ -16,4 +16,5 @@ defmt = ["dep:defmt"]
 cortex-m-rt = "0.7.5"
 embassy-executor = { version = "0.9.1", features = ["arch-cortex-m", "executor-thread"] }
 embassy-time = "0.5.0"
+embedded-hal-async = "1.0.0"
 panic-halt = "1.0.0"

@@ -25,8 +25,11 @@ impl<'d> Board<'d> {
                 sck: p.PA5,
                 miso: p.PA6,
                 mosi: p.PD7,
+                tx_dma: p.DMA1_CH3,
+                rx_dma: p.DMA1_CH4,
                 cs: p.PC15,
                 int: p.PB2,
+                int_exti: p.EXTI2,
             },
             imu_secondary: ImuSecondaryParts {
                 spi: p.SPI4,

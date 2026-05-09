@@ -10,8 +10,11 @@ pub struct ImuPrimaryParts<'d> {
     pub sck: hal::Peri<'d, hal::peripherals::PA5>,
     pub miso: hal::Peri<'d, hal::peripherals::PA6>,
     pub mosi: hal::Peri<'d, hal::peripherals::PD7>,
+    pub tx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH3>,
+    pub rx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH4>,
     pub cs: hal::Peri<'d, hal::peripherals::PC15>,
     pub int: hal::Peri<'d, hal::peripherals::PB2>,
+    pub int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
 }
 
 pub struct ImuSecondaryParts<'d> {

@@ -897,6 +897,7 @@ dependencies = [
  "embassy-stm32",
  "embassy-time",
  "embassy-usb",
+ "embedded-hal-async",
  "panic-halt",
  "stm32-metapac",
 ]
