@@ -1,12 +1,16 @@
 use crate::hal;
 use crate::parts::AdcParts;
+use crate::parts::AuxParts;
+use crate::parts::I2cParts;
 use crate::parts::ImuPrimaryParts;
 use crate::parts::ImuSecondaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
 use crate::parts::OsdParts;
 use crate::parts::ReceiverParts;
+use crate::parts::SdioParts;
 use crate::parts::Spi3Parts;
+use crate::parts::UartPortsParts;
 use crate::parts::UsbParts;
 
 pub struct Board<'d> {
@@ -16,6 +20,10 @@ pub struct Board<'d> {
     pub osd: OsdParts<'d>,
     pub spi3: Spi3Parts<'d>,
     pub receiver: ReceiverParts<'d>,
+    pub uarts: UartPortsParts<'d>,
+    pub i2c: I2cParts<'d>,
+    pub sdio: SdioParts<'d>,
+    pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
     pub usb: UsbParts<'d>,
@@ -68,6 +76,51 @@ impl<'d> Board<'d> {
                 tx: p.PC6,
                 rx: p.PC7,
             },
+            uarts: UartPortsParts {
+                uart1: p.USART1,
+                uart1_tx: p.PA9,
+                uart1_rx: p.PA10,
+                uart2: p.USART2,
+                uart2_tx: p.PD5,
+                uart2_rx: p.PD6,
+                uart3: p.USART3,
+                uart3_tx: p.PD8,
+                uart3_rx: p.PD9,
+                uart4: p.UART4,
+                uart4_tx: p.PB9,
+                uart4_rx: p.PB8,
+                uart7: p.UART7,
+                uart7_tx: p.PE8,
+                uart7_rx: p.PE7,
+                uart8: p.UART8,
+                uart8_tx: p.PE1,
+                uart8_rx: p.PE0,
+            },
+            i2c: I2cParts {
+                i2c1: p.I2C1,
+                i2c1_scl: p.PB6,
+                i2c1_sda: p.PB7,
+                i2c2: p.I2C2,
+                i2c2_scl: p.PB10,
+                i2c2_sda: p.PB11,
+            },
+            sdio: SdioParts {
+                sdmmc1: p.SDMMC1,
+                ck: p.PC12,
+                cmd: p.PD2,
+                d0: p.PC8,
+                d1: p.PC9,
+                d2: p.PC10,
+                d3: p.PC11,
+            },
+            aux: AuxParts {
+                servo1: p.PE5,
+                servo2: p.PE6,
+                led_strip: p.PA8,
+                pinio1: p.PD10,
+                pinio2: p.PD11,
+                pinio3: p.PC13,
+            },
             motors: MotorParts {
                 tim3: p.TIM3,
                 tim5: p.TIM5,
@@ -85,6 +138,9 @@ impl<'d> Board<'d> {
                 vbat: p.PC0,
                 current: p.PC1,
                 rssi: p.PC5,
+                external1: p.PC4,
+                external2: p.PA4,
+                external3: p.PA7,
             },
             usb: UsbParts {
                 otg_fs: p.USB_OTG_FS,
