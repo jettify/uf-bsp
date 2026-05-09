@@ -1,24 +1,57 @@
 use crate::hal;
-use crate::parts::{AdcParts, ImuParts, Leds, MotorParts, ReceiverParts, UsbParts};
+use crate::parts::{AdcParts, ImuPrimaryParts, ImuSecondaryParts, Leds, MotorParts, ReceiverParts};
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
-    pub imu: ImuParts<'d>,
+    pub imu_primary: ImuPrimaryParts<'d>,
+    pub imu_secondary: ImuSecondaryParts<'d>,
     pub receiver: ReceiverParts<'d>,
     pub motors: MotorParts<'d>,
-    pub usb: UsbParts<'d>,
     pub adc: AdcParts<'d>,
 }
 
 impl<'d> Board<'d> {
-    pub fn new(_p: hal::Peripherals) -> Self {
+    pub fn new(p: hal::Peripherals) -> Self {
         Self {
-            leds: Leds::new(),
-            imu: ImuParts::new(),
-            receiver: ReceiverParts::new(),
-            motors: MotorParts::new(),
-            usb: UsbParts::new(),
-            adc: AdcParts::new(),
+            leds: Leds {
+                led0: p.PE3,
+                led1: p.PE4,
+            },
+            imu_primary: ImuPrimaryParts {
+                spi: p.SPI1,
+                sck: p.PA5,
+                miso: p.PA6,
+                mosi: p.PD7,
+                cs: p.PC15,
+                int: p.PB2,
+            },
+            imu_secondary: ImuSecondaryParts {
+                spi: p.SPI4,
+                sck: p.PE12,
+                miso: p.PE13,
+                mosi: p.PE14,
+                cs: p.PE11,
+                int: p.PE15,
+            },
+            receiver: ReceiverParts {
+                uart: p.USART6,
+                tx: p.PC6,
+                rx: p.PC7,
+            },
+            motors: MotorParts {
+                tim3: p.TIM3,
+                tim5: p.TIM5,
+                m1: p.PB0,
+                m2: p.PB1,
+                m3: p.PA0,
+                m4: p.PA1,
+            },
+            adc: AdcParts {
+                adc1: p.ADC1,
+                vbat: p.PC0,
+                current: p.PC1,
+                rssi: p.PC5,
+            },
         }
     }
 }

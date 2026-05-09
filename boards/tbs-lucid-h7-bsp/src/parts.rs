@@ -1,125 +1,46 @@
+use crate::hal;
+
 pub struct Leds<'d> {
-    pub status_led: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
+    pub led0: hal::Peri<'d, hal::peripherals::PE3>,
+    pub led1: hal::Peri<'d, hal::peripherals::PE4>,
 }
 
-impl<'d> Leds<'d> {
-    pub fn new() -> Self {
-        Self {
-            status_led: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for Leds<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
+pub struct ImuPrimaryParts<'d> {
+    pub spi: hal::Peri<'d, hal::peripherals::SPI1>,
+    pub sck: hal::Peri<'d, hal::peripherals::PA5>,
+    pub miso: hal::Peri<'d, hal::peripherals::PA6>,
+    pub mosi: hal::Peri<'d, hal::peripherals::PD7>,
+    pub cs: hal::Peri<'d, hal::peripherals::PC15>,
+    pub int: hal::Peri<'d, hal::peripherals::PB2>,
 }
 
-pub struct ImuParts<'d> {
-    pub cs: Option<()>,
-    pub int: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
-}
-
-impl<'d> ImuParts<'d> {
-    pub fn new() -> Self {
-        Self {
-            cs: None,
-            int: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for ImuParts<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
+pub struct ImuSecondaryParts<'d> {
+    pub spi: hal::Peri<'d, hal::peripherals::SPI4>,
+    pub sck: hal::Peri<'d, hal::peripherals::PE12>,
+    pub miso: hal::Peri<'d, hal::peripherals::PE13>,
+    pub mosi: hal::Peri<'d, hal::peripherals::PE14>,
+    pub cs: hal::Peri<'d, hal::peripherals::PE11>,
+    pub int: hal::Peri<'d, hal::peripherals::PE15>,
 }
 
 pub struct ReceiverParts<'d> {
-    pub tx: Option<()>,
-    pub rx: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
-}
-
-impl<'d> ReceiverParts<'d> {
-    pub fn new() -> Self {
-        Self {
-            tx: None,
-            rx: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for ReceiverParts<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
+    pub uart: hal::Peri<'d, hal::peripherals::USART6>,
+    pub tx: hal::Peri<'d, hal::peripherals::PC6>,
+    pub rx: hal::Peri<'d, hal::peripherals::PC7>,
 }
 
 pub struct MotorParts<'d> {
-    pub ch1: Option<()>,
-    pub ch2: Option<()>,
-    pub ch3: Option<()>,
-    pub ch4: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
-}
-
-impl<'d> MotorParts<'d> {
-    pub fn new() -> Self {
-        Self {
-            ch1: None,
-            ch2: None,
-            ch3: None,
-            ch4: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for MotorParts<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-pub struct UsbParts<'d> {
-    pub dm: Option<()>,
-    pub dp: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
-}
-
-impl<'d> UsbParts<'d> {
-    pub fn new() -> Self {
-        Self {
-            dm: None,
-            dp: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for UsbParts<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
+    pub tim3: hal::Peri<'d, hal::peripherals::TIM3>,
+    pub tim5: hal::Peri<'d, hal::peripherals::TIM5>,
+    pub m1: hal::Peri<'d, hal::peripherals::PB0>,
+    pub m2: hal::Peri<'d, hal::peripherals::PB1>,
+    pub m3: hal::Peri<'d, hal::peripherals::PA0>,
+    pub m4: hal::Peri<'d, hal::peripherals::PA1>,
 }
 
 pub struct AdcParts<'d> {
-    pub battery_adc: Option<()>,
-    _marker: core::marker::PhantomData<&'d ()>,
-}
-
-impl<'d> AdcParts<'d> {
-    pub fn new() -> Self {
-        Self {
-            battery_adc: None,
-            _marker: core::marker::PhantomData,
-        }
-    }
-}
-impl<'d> Default for AdcParts<'d> {
-    fn default() -> Self {
-        Self::new()
-    }
+    pub adc1: hal::Peri<'d, hal::peripherals::ADC1>,
+    pub vbat: hal::Peri<'d, hal::peripherals::PC0>,
+    pub current: hal::Peri<'d, hal::peripherals::PC1>,
+    pub rssi: hal::Peri<'d, hal::peripherals::PC5>,
 }
