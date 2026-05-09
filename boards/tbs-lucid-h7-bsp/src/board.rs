@@ -1,4 +1,3 @@
-use crate::hal;
 use crate::dma::Adc1Dma;
 use crate::dma::Adc3Dma;
 use crate::dma::DmaResources;
@@ -6,6 +5,7 @@ use crate::dma::Spi1Dma;
 use crate::dma::Spi2Dma;
 use crate::dma::Spi4Dma;
 use crate::dma::Usart6Dma;
+use crate::hal;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
 use crate::parts::I2cParts;
@@ -162,10 +162,7 @@ impl<'d> Board<'d> {
                 },
                 adc1: Adc1Dma { ch: p.DMA2_CH1 },
                 adc3: Adc3Dma { ch: p.DMA2_CH2 },
-                usart6: Usart6Dma {
-                    tx: None,
-                    rx: None,
-                },
+                usart6: Usart6Dma { tx: None, rx: None },
             },
             usb: UsbParts {
                 otg_fs: p.USB_OTG_FS,
