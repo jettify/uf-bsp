@@ -665,6 +665,8 @@ name = "tbs-lucid-h7-bsp"
 version = "0.1.0"
 dependencies = [
  "defmt",
+ "embassy-stm32",
+ "stm32-metapac",
 ]
 
 [[package]]
@@ -701,9 +703,6 @@ dependencies = [
 [[package]]
 name = "uf-bsp"
 version = "0.1.0"
-dependencies = [
- "embassy-stm32",
-]
 
 [[package]]
 name = "unicode-ident"

@@ -5,11 +5,10 @@ resolver = "2"
 
 [workspace.dependencies]
 defmt = "1.0.1"
+embassy-stm32 = "0.6.0"
+stm32-metapac = "21.0.0"
 
 [package]
 name = "uf-bsp"
 version = "0.1.0"
 edition = "2024"
-
-[dependencies]
-embassy-stm32 = "0.6.0"

@@ -5,6 +5,8 @@ edition = "2024"
 
 [dependencies]
 defmt = { workspace = true, optional = true }
+embassy-stm32 = { workspace = true, features = ["stm32h743zi"] }
+stm32-metapac = { workspace = true }
 
 [features]
 defmt = ["dep:defmt"]

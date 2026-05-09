@@ -1,16 +1,13 @@
 #![no_std]
 
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
-}
+pub use embassy_stm32 as hal;
+pub use stm32_metapac as pac;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub mod board;
+pub mod clocks;
+pub mod interrupts;
+pub mod pins;
+pub mod parts;
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
-}
+pub use board::Board;
+pub use clocks::config;
