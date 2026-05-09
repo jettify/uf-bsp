@@ -1,0 +1,12 @@
+/* STM32H743ZI (TBS Lucid H7 BSP baseline) */
+MEMORY
+{
+  /* 2 MiB embedded flash */
+  FLASH : ORIGIN = 0x08000000, LENGTH = 2048K
+
+  /* 128 KiB DTCM RAM */
+  DTCM  : ORIGIN = 0x20000000, LENGTH = 128K
+
+  /* 512 KiB AXI SRAM */
+  RAM   : ORIGIN = 0x24000000, LENGTH = 512K
+}
