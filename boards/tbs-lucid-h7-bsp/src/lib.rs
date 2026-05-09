@@ -5,6 +5,7 @@ pub use stm32_metapac as pac;
 
 pub mod board;
 pub mod clocks;
+pub mod dma;
 pub mod interrupts;
 pub mod parts;
 pub mod pins;

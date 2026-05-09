@@ -11,8 +11,6 @@ pub struct ImuPrimaryParts<'d> {
     pub sck: hal::Peri<'d, pins::Imu1Sck>,
     pub miso: hal::Peri<'d, pins::Imu1Miso>,
     pub mosi: hal::Peri<'d, pins::Imu1Mosi>,
-    pub tx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH3>,
-    pub rx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH4>,
     pub cs: hal::Peri<'d, pins::Imu1Cs>,
     pub int: hal::Peri<'d, pins::Imu1Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
@@ -23,8 +21,6 @@ pub struct ImuSecondaryParts<'d> {
     pub sck: hal::Peri<'d, pins::Imu2Sck>,
     pub miso: hal::Peri<'d, pins::Imu2Miso>,
     pub mosi: hal::Peri<'d, pins::Imu2Mosi>,
-    pub tx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH6>,
-    pub rx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH7>,
     pub cs: hal::Peri<'d, pins::Imu2Cs>,
     pub int: hal::Peri<'d, pins::Imu2Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
@@ -115,6 +111,7 @@ pub struct MotorParts<'d> {
 
 pub struct AdcParts<'d> {
     pub adc1: hal::Peri<'d, hal::peripherals::ADC1>,
+    pub adc3: hal::Peri<'d, hal::peripherals::ADC3>,
     pub vbat: hal::Peri<'d, pins::VbatAdc>,
     pub current: hal::Peri<'d, pins::CurrentAdc>,
     pub rssi: hal::Peri<'d, pins::RssiAdc>,

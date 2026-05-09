@@ -17,8 +17,8 @@ use panic_halt as _;
 use tbs_lucid_h7_bsp as bsp;
 
 bind_interrupts!(struct Irqs {
-    DMA1_STREAM3 => dma::InterruptHandler<peripherals::DMA1_CH3>;
-    DMA1_STREAM4 => dma::InterruptHandler<peripherals::DMA1_CH4>;
+    DMA1_STREAM0 => dma::InterruptHandler<peripherals::DMA1_CH0>;
+    DMA1_STREAM1 => dma::InterruptHandler<peripherals::DMA1_CH1>;
     EXTI2 => exti::InterruptHandler<interrupt::typelevel::EXTI2>;
 });
 
@@ -38,8 +38,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
         board.imu_primary.sck,
         board.imu_primary.mosi,
         board.imu_primary.miso,
-        board.imu_primary.tx_dma,
-        board.imu_primary.rx_dma,
+        board.dma.spi1.tx,
+        board.dma.spi1.rx,
         Irqs,
         spi_cfg,
     );

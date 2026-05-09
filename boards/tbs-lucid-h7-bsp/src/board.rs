@@ -1,4 +1,11 @@
 use crate::hal;
+use crate::dma::Adc1Dma;
+use crate::dma::Adc3Dma;
+use crate::dma::DmaResources;
+use crate::dma::Spi1Dma;
+use crate::dma::Spi2Dma;
+use crate::dma::Spi4Dma;
+use crate::dma::Usart6Dma;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
 use crate::parts::I2cParts;
@@ -26,6 +33,7 @@ pub struct Board<'d> {
     pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
+    pub dma: DmaResources<'d>,
     pub usb: UsbParts<'d>,
 }
 
@@ -41,8 +49,6 @@ impl<'d> Board<'d> {
                 sck: p.PA5,
                 miso: p.PA6,
                 mosi: p.PD7,
-                tx_dma: p.DMA1_CH3,
-                rx_dma: p.DMA1_CH4,
                 cs: p.PC15,
                 int: p.PB2,
                 int_exti: p.EXTI2,
@@ -52,8 +58,6 @@ impl<'d> Board<'d> {
                 sck: p.PE12,
                 miso: p.PE13,
                 mosi: p.PE14,
-                tx_dma: p.DMA1_CH6,
-                rx_dma: p.DMA1_CH7,
                 cs: p.PE11,
                 int: p.PE15,
                 int_exti: p.EXTI15,
@@ -135,12 +139,33 @@ impl<'d> Board<'d> {
             },
             adc: AdcParts {
                 adc1: p.ADC1,
+                adc3: p.ADC3,
                 vbat: p.PC0,
                 current: p.PC1,
                 rssi: p.PC5,
                 external1: p.PC4,
                 external2: p.PA4,
                 external3: p.PA7,
+            },
+            dma: DmaResources {
+                spi1: Spi1Dma {
+                    tx: p.DMA1_CH0,
+                    rx: p.DMA1_CH1,
+                },
+                spi2: Spi2Dma {
+                    tx: p.DMA1_CH2,
+                    rx: p.DMA1_CH3,
+                },
+                spi4: Spi4Dma {
+                    tx: p.DMA1_CH6,
+                    rx: p.DMA1_CH7,
+                },
+                adc1: Adc1Dma { ch: p.DMA2_CH1 },
+                adc3: Adc3Dma { ch: p.DMA2_CH2 },
+                usart6: Usart6Dma {
+                    tx: None,
+                    rx: None,
+                },
             },
             usb: UsbParts {
                 otg_fs: p.USB_OTG_FS,
