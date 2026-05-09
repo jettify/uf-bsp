@@ -819,6 +819,20 @@ dependencies = [
 ]
 
 [[package]]
+name = "speedybee-f405-v4-bsp"
+version = "0.1.0"
+dependencies = [
+ "cortex-m-rt",
+ "defmt",
+ "embassy-executor",
+ "embassy-stm32",
+ "embassy-time",
+ "embedded-hal-async",
+ "panic-halt",
+ "stm32-metapac",
+]
+
+[[package]]
 name = "ssmarshal"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
