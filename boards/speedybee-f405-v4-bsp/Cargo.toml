@@ -12,8 +12,8 @@ stm32-metapac = { workspace = true }
 defmt = ["dep:defmt"]
 
 [dev-dependencies]
-cortex-m-rt = "0.7.5"
-embassy-executor = { version = "0.9.1", features = ["arch-cortex-m", "executor-thread"] }
-embassy-time = "0.5.0"
-embedded-hal-async = "1.0.0"
-panic-halt = "1.0.0"
+cortex-m-rt = { workspace = true }
+embassy-executor = { workspace = true }
+embassy-time = { workspace = true }
+embedded-hal-async = { workspace = true }
+panic-halt = { workspace = true }
