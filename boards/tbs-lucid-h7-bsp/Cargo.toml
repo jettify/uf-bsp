@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 defmt = { workspace = true, optional = true }
 embassy-stm32 = { workspace = true, features = ["stm32h743zi"] }
+embassy-usb = "0.6.0"
 stm32-metapac = { workspace = true }
 
 [features]

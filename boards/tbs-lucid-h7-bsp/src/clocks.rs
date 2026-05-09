@@ -35,3 +35,11 @@ pub fn config() -> hal::Config {
 
     cfg
 }
+
+pub fn config_with_usb() -> hal::Config {
+    let mut cfg = config();
+    cfg.rcc.hsi48 = Some(hal::rcc::Hsi48Config {
+        sync_from_usb: true,
+    });
+    cfg
+}

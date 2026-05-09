@@ -44,3 +44,9 @@ pub struct AdcParts<'d> {
     pub current: hal::Peri<'d, hal::peripherals::PC1>,
     pub rssi: hal::Peri<'d, hal::peripherals::PC5>,
 }
+
+pub struct UsbParts<'d> {
+    pub otg_fs: hal::Peri<'d, hal::peripherals::USB_OTG_FS>,
+    pub dm: hal::Peri<'d, hal::peripherals::PA11>,
+    pub dp: hal::Peri<'d, hal::peripherals::PA12>,
+}

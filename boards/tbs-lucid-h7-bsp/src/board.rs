@@ -1,5 +1,7 @@
 use crate::hal;
-use crate::parts::{AdcParts, ImuPrimaryParts, ImuSecondaryParts, Leds, MotorParts, ReceiverParts};
+use crate::parts::{
+    AdcParts, ImuPrimaryParts, ImuSecondaryParts, Leds, MotorParts, ReceiverParts, UsbParts,
+};
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
@@ -8,6 +10,7 @@ pub struct Board<'d> {
     pub receiver: ReceiverParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
+    pub usb: UsbParts<'d>,
 }
 
 impl<'d> Board<'d> {
@@ -51,6 +54,11 @@ impl<'d> Board<'d> {
                 vbat: p.PC0,
                 current: p.PC1,
                 rssi: p.PC5,
+            },
+            usb: UsbParts {
+                otg_fs: p.USB_OTG_FS,
+                dm: p.PA11,
+                dp: p.PA12,
             },
         }
     }
