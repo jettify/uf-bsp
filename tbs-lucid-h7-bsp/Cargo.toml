@@ -1,7 +1,11 @@
 [package]
 name = "tbs-lucid-h7-bsp"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license-file.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
 embassy-stm32 = { workspace = true, features = [
@@ -9,10 +13,8 @@ embassy-stm32 = { workspace = true, features = [
   "time-driver-any",
   "exti",
 ] }
-embassy-usb = "0.6.0"
+embassy-usb = { workspace = true }
 stm32-metapac = { workspace = true }
-
-[features]
 
 [dev-dependencies]
 cortex-m-rt = { workspace = true }

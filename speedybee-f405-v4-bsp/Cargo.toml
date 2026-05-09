@@ -1,7 +1,11 @@
 [package]
 name = "speedybee-f405-v4-bsp"
-version = "0.1.0"
-edition = "2024"
+version.workspace = true
+edition.workspace = true
+license-file.workspace = true
+authors.workspace = true
+repository.workspace = true
+homepage.workspace = true
 
 [dependencies]
 embassy-stm32 = { workspace = true, features = [
@@ -10,8 +14,6 @@ embassy-stm32 = { workspace = true, features = [
   "exti",
 ] }
 stm32-metapac = { workspace = true }
-
-[features]
 
 [dev-dependencies]
 cortex-m-rt = { workspace = true }
