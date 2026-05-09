@@ -22,8 +22,11 @@ pub struct ImuSecondaryParts<'d> {
     pub sck: hal::Peri<'d, hal::peripherals::PE12>,
     pub miso: hal::Peri<'d, hal::peripherals::PE13>,
     pub mosi: hal::Peri<'d, hal::peripherals::PE14>,
+    pub tx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH6>,
+    pub rx_dma: hal::Peri<'d, hal::peripherals::DMA1_CH7>,
     pub cs: hal::Peri<'d, hal::peripherals::PE11>,
     pub int: hal::Peri<'d, hal::peripherals::PE15>,
+    pub int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
 }
 
 pub struct ReceiverParts<'d> {

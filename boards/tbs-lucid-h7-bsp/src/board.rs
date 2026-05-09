@@ -36,8 +36,11 @@ impl<'d> Board<'d> {
                 sck: p.PE12,
                 miso: p.PE13,
                 mosi: p.PE14,
+                tx_dma: p.DMA1_CH6,
+                rx_dma: p.DMA1_CH7,
                 cs: p.PE11,
                 int: p.PE15,
+                int_exti: p.EXTI15,
             },
             receiver: ReceiverParts {
                 uart: p.USART6,
