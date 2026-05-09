@@ -11,6 +11,11 @@ impl<'d> Leds<'d> {
         }
     }
 }
+impl<'d> Default for Leds<'d> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct ImuParts<'d> {
     pub cs: Option<()>,
@@ -27,6 +32,11 @@ impl<'d> ImuParts<'d> {
         }
     }
 }
+impl<'d> Default for ImuParts<'d> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct ReceiverParts<'d> {
     pub tx: Option<()>,
@@ -41,6 +51,11 @@ impl<'d> ReceiverParts<'d> {
             rx: None,
             _marker: core::marker::PhantomData,
         }
+    }
+}
+impl<'d> Default for ReceiverParts<'d> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -63,6 +78,11 @@ impl<'d> MotorParts<'d> {
         }
     }
 }
+impl<'d> Default for MotorParts<'d> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct UsbParts<'d> {
     pub dm: Option<()>,
@@ -79,6 +99,11 @@ impl<'d> UsbParts<'d> {
         }
     }
 }
+impl<'d> Default for UsbParts<'d> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 pub struct AdcParts<'d> {
     pub battery_adc: Option<()>,
@@ -91,5 +116,10 @@ impl<'d> AdcParts<'d> {
             battery_adc: None,
             _marker: core::marker::PhantomData,
         }
+    }
+}
+impl<'d> Default for AdcParts<'d> {
+    fn default() -> Self {
+        Self::new()
     }
 }
