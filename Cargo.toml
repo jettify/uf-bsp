@@ -1,6 +1,14 @@
 [workspace]
-members = ["boards/*-bsp"]
-resolver = "2"
+members = ["tbs-lucid-h7-bsp", "speedybee-f405-v4-bsp"]
+resolver = "3"
+
+[workspace.package]
+rust-version = "1.87"
+edition = "2024"
+license-file = "LICENSE"
+authors = ["Mykola Novik <mykola@uflight.dev>"]
+repository = "https://github.com/jettify/uf-bsp"
+homepage = "https://github.com/jettify/uf-bsp"
 
 [workspace.dependencies]
 embassy-stm32 = "0.6.0"
