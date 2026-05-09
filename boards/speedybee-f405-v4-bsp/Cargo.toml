@@ -4,12 +4,14 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-defmt = { workspace = true, optional = true }
-embassy-stm32 = { workspace = true, features = ["stm32f405rg", "time-driver-any", "exti"] }
+embassy-stm32 = { workspace = true, features = [
+  "stm32f405rg",
+  "time-driver-any",
+  "exti",
+] }
 stm32-metapac = { workspace = true }
 
 [features]
-defmt = ["dep:defmt"]
 
 [dev-dependencies]
 cortex-m-rt = { workspace = true }
