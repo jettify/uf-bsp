@@ -1,0 +1,15 @@
+[workspace]
+members = ["boards/*"]
+exclude = []
+resolver = "2"
+
+[workspace.dependencies]
+defmt = "1.0.1"
+
+[package]
+name = "uf-bsp"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+embassy-stm32 = "0.6.0"
