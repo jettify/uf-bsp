@@ -26,7 +26,23 @@ pub type Motor1 = peripherals::PB0;
 pub type Motor2 = peripherals::PB1;
 pub type Motor3 = peripherals::PA0;
 pub type Motor4 = peripherals::PA1;
+pub type Motor5 = peripherals::PA2;
+pub type Motor6 = peripherals::PA3;
+pub type Motor7 = peripherals::PD12;
+pub type Motor8 = peripherals::PD13;
+
+pub type OsdSck = peripherals::PB13;
+pub type OsdMiso = peripherals::PB14;
+pub type OsdMosi = peripherals::PB15;
+pub type OsdCs = peripherals::PB12;
+
+pub type Spi3Sck = peripherals::PB3;
+pub type Spi3Miso = peripherals::PB4;
+pub type Spi3Mosi = peripherals::PB5;
 
 pub type VbatAdc = peripherals::PC0;
 pub type CurrentAdc = peripherals::PC1;
 pub type RssiAdc = peripherals::PC5;
+
+pub type UsbDm = peripherals::PA11;
+pub type UsbDp = peripherals::PA12;

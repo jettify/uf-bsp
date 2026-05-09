@@ -4,13 +4,17 @@ use crate::parts::ImuPrimaryParts;
 use crate::parts::ImuSecondaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
+use crate::parts::OsdParts;
 use crate::parts::ReceiverParts;
+use crate::parts::Spi3Parts;
 use crate::parts::UsbParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
     pub imu_primary: ImuPrimaryParts<'d>,
     pub imu_secondary: ImuSecondaryParts<'d>,
+    pub osd: OsdParts<'d>,
+    pub spi3: Spi3Parts<'d>,
     pub receiver: ReceiverParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
@@ -46,6 +50,19 @@ impl<'d> Board<'d> {
                 int: p.PE15,
                 int_exti: p.EXTI15,
             },
+            osd: OsdParts {
+                spi: p.SPI2,
+                sck: p.PB13,
+                miso: p.PB14,
+                mosi: p.PB15,
+                cs: p.PB12,
+            },
+            spi3: Spi3Parts {
+                spi: p.SPI3,
+                sck: p.PB3,
+                miso: p.PB4,
+                mosi: p.PB5,
+            },
             receiver: ReceiverParts {
                 uart: p.USART6,
                 tx: p.PC6,
@@ -58,6 +75,10 @@ impl<'d> Board<'d> {
                 m2: p.PB1,
                 m3: p.PA0,
                 m4: p.PA1,
+                m5: p.PA2,
+                m6: p.PA3,
+                m7: p.PD12,
+                m8: p.PD13,
             },
             adc: AdcParts {
                 adc1: p.ADC1,
