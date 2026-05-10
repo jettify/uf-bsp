@@ -31,7 +31,7 @@ pub struct Board<'d> {
     pub dma: DmaResources<'d>,
 }
 
-impl<'d> Board<'d> {
+impl Board<'_> {
     pub fn new(p: hal::Peripherals) -> Self {
         Self::new_with_dma_layout(p, DmaLayout::ImuSpiPreferred)
     }

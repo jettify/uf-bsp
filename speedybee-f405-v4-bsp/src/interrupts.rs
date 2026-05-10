@@ -1,4 +1,4 @@
-//! Embassy-compatible interrupt bindings for SpeedyBee F405 V4 peripherals.
+//! Embassy-compatible interrupt bindings for `SpeedyBee` F405 V4 peripherals.
 
 use crate::hal;
 

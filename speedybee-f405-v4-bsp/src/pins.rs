@@ -1,4 +1,4 @@
-//! Board-oriented pin naming for SpeedyBee F405 V4.
+//! Board-oriented pin naming for `SpeedyBee` F405 V4.
 //!
 //! Names follow flight-controller usage while keeping concrete MCU pins explicit.
 

@@ -37,7 +37,7 @@ pub struct Board<'d> {
     pub usb: UsbParts<'d>,
 }
 
-impl<'d> Board<'d> {
+impl Board<'_> {
     pub fn new(p: hal::Peripherals) -> Self {
         Self {
             leds: Leds {

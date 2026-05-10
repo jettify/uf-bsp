@@ -48,8 +48,8 @@ pub struct UsbSerial<'d> {
 impl<'d> UsbParts<'d> {
     pub fn into_usb_serial(
         self,
-        cfg: UsbSerialConfig<'d>,
-        bufs: UsbSerialBuffers<'d>,
+        cfg: &UsbSerialConfig<'d>,
+        bufs: &'d mut UsbSerialBuffers<'d>,
         state: &'d mut State<'d>,
     ) -> UsbSerial<'d> {
         let mut usb_cfg = hal::usb::Config::default();
