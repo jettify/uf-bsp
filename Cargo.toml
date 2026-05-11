@@ -15,14 +15,21 @@ homepage = "https://github.com/jettify/uf-bsp"
 embassy-stm32 = "0.6.0"
 embassy-usb = "0.6.0"
 stm32-metapac = "21.0.0"
+embedded-hal-bus = { version = "0.3.0", features = ["async"] }
+icm426xx = { version = "0.4.0", features = ["async"] }
+uf-dps3xx = "0.2.0"
 cortex-m-rt = "0.7.5"
 embassy-executor = { version = "0.10.0", features = [
   "platform-cortex-m",
   "executor-thread",
 ] }
+embassy-futures = "0.1.2"
 embassy-time = "0.5.0"
 embedded-hal-async = "1.0.0"
 panic-halt = "1.0.0"
+defmt = "1.0.1"
+defmt-rtt = "1.1.0"
+panic-probe = { version = "1.0.0", features = ["print-defmt"] }
 
 [workspace.lints.clippy]
 unwrap_used = "forbid"
@@ -49,3 +56,9 @@ missing_assert_message = "warn"
 redundant_type_annotations = "warn"
 indexing_slicing = "deny"
 let_underscore_must_use = "deny"
+
+[profile.release]
+codegen-units = 1
+debug = 2
+lto = 'fat'
+opt-level = 's'

@@ -17,8 +17,19 @@ embassy-usb = { workspace = true }
 stm32-metapac = { workspace = true }
 
 [dev-dependencies]
+cortex-m = { version = "0.7.6", features = [
+  "inline-asm",
+  "critical-section-single-core",
+] }
 cortex-m-rt = { workspace = true }
 embassy-executor = { workspace = true }
+embassy-futures = { workspace = true }
 embassy-time = { workspace = true }
 embedded-hal-async = { workspace = true }
+embedded-hal-bus = { workspace = true }
+icm426xx = { workspace = true }
+uf-dps3xx = { workspace = true }
 panic-halt = { workspace = true }
+defmt = { workspace = true }
+defmt-rtt = { workspace = true }
+panic-probe = { workspace = true }
