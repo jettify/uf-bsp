@@ -72,6 +72,9 @@ pub struct I2cParts<'d> {
     pub i2c1: hal::Peri<'d, hal::peripherals::I2C1>,
     pub i2c1_scl: hal::Peri<'d, pins::I2c1Scl>,
     pub i2c1_sda: hal::Peri<'d, pins::I2c1Sda>,
+}
+
+pub struct BaroParts<'d> {
     pub i2c2: hal::Peri<'d, hal::peripherals::I2C2>,
     pub i2c2_scl: hal::Peri<'d, pins::I2c2Scl>,
     pub i2c2_sda: hal::Peri<'d, pins::I2c2Sda>,

@@ -8,6 +8,7 @@ use crate::dma::Usart6Dma;
 use crate::hal;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
+use crate::parts::BaroParts;
 use crate::parts::I2cParts;
 use crate::parts::ImuPrimaryParts;
 use crate::parts::ImuSecondaryParts;
@@ -29,6 +30,7 @@ pub struct Board<'d> {
     pub receiver: ReceiverParts<'d>,
     pub uarts: UartPortsParts<'d>,
     pub i2c: I2cParts<'d>,
+    pub baro: BaroParts<'d>,
     pub sdio: SdioParts<'d>,
     pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
@@ -104,6 +106,8 @@ impl Board<'_> {
                 i2c1: p.I2C1,
                 i2c1_scl: p.PB6,
                 i2c1_sda: p.PB7,
+            },
+            baro: BaroParts {
                 i2c2: p.I2C2,
                 i2c2_scl: p.PB10,
                 i2c2_sda: p.PB11,
