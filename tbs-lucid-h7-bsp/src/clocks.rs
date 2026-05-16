@@ -30,6 +30,17 @@ pub fn config() -> hal::Config {
         divq: Some(PllDiv::DIV5),
         divr: Some(PllDiv::DIV5),
     });
+    // ADC kernel clock defaults to PLL2_P on STM32H7 in embassy-stm32.
+    // Provide PLL2 so ADC1/ADC3 can run without runtime panic.
+    cfg.rcc.pll2 = Some(Pll {
+        source: PllSource::HSE,
+        prediv: PllPreDiv::DIV2, // 8MHz / 2 = 4MHz
+        mul: PllMul::MUL50,      // 4MHz * 50 = 200MHz VCO
+        fracn: None,
+        divp: Some(PllDiv::DIV4), // 50MHz ADC kernel source
+        divq: None,
+        divr: None,
+    });
     cfg.rcc.sys = Sysclk::PLL1_P;
 
     cfg.rcc.d1c_pre = AHBPrescaler::DIV1;
