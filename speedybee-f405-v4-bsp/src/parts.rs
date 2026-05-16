@@ -54,7 +54,7 @@ pub struct UartPortsParts<'d> {
     pub uart6_rx: hal::Peri<'d, pins::Uart6Rx>,
 }
 
-pub struct I2cParts<'d> {
+pub struct BaroParts<'d> {
     pub i2c1: hal::Peri<'d, hal::peripherals::I2C1>,
     pub i2c1_scl: hal::Peri<'d, pins::I2c1Scl>,
     pub i2c1_sda: hal::Peri<'d, pins::I2c1Sda>,

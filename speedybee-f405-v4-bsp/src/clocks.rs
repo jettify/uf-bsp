@@ -37,3 +37,8 @@ pub fn config() -> hal::Config {
 
     cfg
 }
+
+pub fn config_with_usb() -> hal::Config {
+    // STM32F405 USB FS uses the 48MHz PLLQ clock, which is already configured in `config()`.
+    config()
+}

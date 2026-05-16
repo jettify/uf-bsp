@@ -8,7 +8,7 @@ use crate::dma::Usart2Dma;
 use crate::hal;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
-use crate::parts::I2cParts;
+use crate::parts::BaroParts;
 use crate::parts::ImuPrimaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
@@ -24,7 +24,7 @@ pub struct Board<'d> {
     pub sdcard_spi: SdcardSpiParts<'d>,
     pub receiver: ReceiverParts<'d>,
     pub uarts: UartPortsParts<'d>,
-    pub i2c: I2cParts<'d>,
+    pub baro: BaroParts<'d>,
     pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
     pub adc: AdcParts<'d>,
@@ -88,7 +88,7 @@ impl Board<'_> {
                 uart6_tx: p.PC6,
                 uart6_rx: p.PC7,
             },
-            i2c: I2cParts {
+            baro: BaroParts {
                 i2c1: p.I2C1,
                 i2c1_scl: p.PB8,
                 i2c1_sda: p.PB9,

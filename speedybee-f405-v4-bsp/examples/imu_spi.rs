@@ -30,6 +30,12 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut led0 = Output::new(board.leds.led0, Level::Low, Speed::Low);
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
+    let Some(spi1_rx) = board.dma.spi1.rx else {
+        loop {
+            led0.toggle();
+            Timer::after(Duration::from_millis(250)).await;
+        }
+    };
 
     let mut spi = spi::Spi::new(
         board.imu_primary.spi,
@@ -37,11 +43,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
         board.imu_primary.mosi,
         board.imu_primary.miso,
         board.dma.spi1.tx,
-        board
-            .dma
-            .spi1
-            .rx
-            .expect("SPI1 RX DMA unavailable in Adc1Preferred layout"),
+        spi1_rx,
         Irqs,
         spi_cfg,
     );
