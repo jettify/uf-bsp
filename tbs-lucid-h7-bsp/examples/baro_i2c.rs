@@ -47,8 +47,11 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut led0 = Output::new(board.leds.led0, Level::High, Speed::Low);
     let mut led1 = Output::new(board.leds.led1, Level::Low, Speed::Low);
 
-    let mut i2c_cfg = I2cConfig::default();
-    i2c_cfg.frequency = Hertz::khz(400);
+    let i2c_cfg = {
+        let mut cfg = I2cConfig::default();
+        cfg.frequency = Hertz::khz(400);
+        cfg
+    };
     let i2c = I2c::new_blocking(
         board.baro.i2c2,
         board.baro.i2c2_scl,
@@ -57,8 +60,23 @@ async fn main(_spawner: embassy_executor::Spawner) {
     );
 
     let dps_config = DpsConfig::default();
-    let mut dps = init_dps(i2c, dps_config).await.unwrap();
-    dps.start_background().unwrap();
+    let mut dps = match init_dps(i2c, dps_config).await {
+        Ok(dps) => dps,
+        Err(_) => {
+            info!("dps3xx init failed");
+            loop {
+                led1.toggle();
+                Timer::after_millis(250).await;
+            }
+        }
+    };
+    if dps.start_background().is_err() {
+        info!("dps3xx background start failed");
+        loop {
+            led1.toggle();
+            Timer::after_millis(250).await;
+        }
+    }
 
     info!("dps3xx initialized on I2C2");
 

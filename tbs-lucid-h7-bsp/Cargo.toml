@@ -7,6 +7,9 @@ authors.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 embassy-stm32 = { workspace = true, features = [
   "stm32h743zi",

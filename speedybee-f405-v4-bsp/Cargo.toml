@@ -7,17 +7,25 @@ authors.workspace = true
 repository.workspace = true
 homepage.workspace = true
 
+[lints]
+workspace = true
+
 [dependencies]
 embassy-stm32 = { workspace = true, features = [
   "stm32f405rg",
   "time-driver-any",
   "exti",
 ] }
+embassy-usb = { workspace = true }
+embassy-usb-logger = "0.6.0"
+log = "0.4"
+static_cell = "2.1.1"
 stm32-metapac = { workspace = true }
 
 [dev-dependencies]
 cortex-m-rt = { workspace = true }
 embassy-executor = { workspace = true }
+embassy-futures = { workspace = true }
 embassy-time = { workspace = true }
 embedded-hal-async = { workspace = true }
 panic-halt = { workspace = true }

@@ -22,7 +22,9 @@ clean:
 # Lint source code CI linter
 lint:
   cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf -- -D warnings
+  cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --examples -- -D warnings
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf -- -D warnings
+  cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples -- -D warnings
 
 # Check board examples
 check-examples:
@@ -32,7 +34,9 @@ check-examples:
 # Lint source code with strict linter
 pedantic:
   cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf -- -W clippy::pedantic
+  cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --examples -- -W clippy::pedantic
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf -- -W clippy::pedantic
+  cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples -- -W clippy::pedantic
 
 # Run same testing commands as on CI server
 ci: build lint check-examples
