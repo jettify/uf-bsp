@@ -11,6 +11,8 @@ fn main() -> std::io::Result<()> {
 
     println!("cargo:rustc-link-search={}", out.display());
     println!("cargo:rerun-if-changed=memory.x");
+    println!("cargo:rustc-link-arg-examples=--nmagic");
+    println!("cargo:rustc-link-arg-examples=-Tlink.x");
 
     Ok(())
 }
