@@ -36,6 +36,9 @@ pub type Uart5Rx = peripherals::PD2;
 pub type Uart6Tx = peripherals::PC6;
 pub type Uart6Rx = peripherals::PC7;
 
+pub type UsbDm = peripherals::PA11;
+pub type UsbDp = peripherals::PA12;
+
 pub type I2c1Scl = peripherals::PB8;
 pub type I2c1Sda = peripherals::PB9;
 

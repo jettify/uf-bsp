@@ -54,6 +54,12 @@ pub struct UartPortsParts<'d> {
     pub uart6_rx: hal::Peri<'d, pins::Uart6Rx>,
 }
 
+pub struct UsbParts<'d> {
+    pub otg_fs: hal::Peri<'d, hal::peripherals::USB_OTG_FS>,
+    pub dm: hal::Peri<'d, pins::UsbDm>,
+    pub dp: hal::Peri<'d, pins::UsbDp>,
+}
+
 pub struct BaroParts<'d> {
     pub i2c1: hal::Peri<'d, hal::peripherals::I2C1>,
     pub i2c1_scl: hal::Peri<'d, pins::I2c1Scl>,

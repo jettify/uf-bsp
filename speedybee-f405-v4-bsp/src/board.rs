@@ -16,6 +16,7 @@ use crate::parts::OsdParts;
 use crate::parts::ReceiverParts;
 use crate::parts::SdcardSpiParts;
 use crate::parts::UartPortsParts;
+use crate::parts::UsbParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
@@ -24,6 +25,7 @@ pub struct Board<'d> {
     pub sdcard_spi: SdcardSpiParts<'d>,
     pub receiver: ReceiverParts<'d>,
     pub uarts: UartPortsParts<'d>,
+    pub usb: UsbParts<'d>,
     pub baro: BaroParts<'d>,
     pub aux: AuxParts<'d>,
     pub motors: MotorParts<'d>,
@@ -87,6 +89,11 @@ impl Board<'_> {
                 uart6: p.USART6,
                 uart6_tx: p.PC6,
                 uart6_rx: p.PC7,
+            },
+            usb: UsbParts {
+                otg_fs: p.USB_OTG_FS,
+                dm: p.PA11,
+                dp: p.PA12,
             },
             baro: BaroParts {
                 i2c1: p.I2C1,
