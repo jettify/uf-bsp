@@ -1076,6 +1076,8 @@ dependencies = [
  "embassy-usb",
  "embassy-usb-logger",
  "embedded-hal-async",
+ "embedded-hal-bus",
+ "icm426xx",
  "log",
  "panic-halt",
  "static_cell",

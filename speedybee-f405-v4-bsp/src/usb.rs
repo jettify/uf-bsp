@@ -1,0 +1,90 @@
+use embassy_usb::Builder;
+use embassy_usb::class::cdc_acm::CdcAcmClass;
+use embassy_usb::class::cdc_acm::State;
+
+use crate::hal;
+use crate::interrupts::UsbFsIrqs;
+use crate::parts::UsbParts;
+
+pub type FsDriver<'d> = hal::usb::Driver<'d, hal::peripherals::USB_OTG_FS>;
+
+pub struct UsbCdcAcmConfig<'a> {
+    pub vid: u16,
+    pub pid: u16,
+    pub manufacturer: Option<&'a str>,
+    pub product: Option<&'a str>,
+    pub serial_number: Option<&'a str>,
+    pub max_packet_size: u16,
+    pub max_power_ma: u16,
+    pub vbus_detection: bool,
+}
+
+impl Default for UsbCdcAcmConfig<'_> {
+    fn default() -> Self {
+        Self {
+            vid: 0xc0de,
+            pid: 0xcafe,
+            manufacturer: Some("Embassy"),
+            product: Some("SpeedyBee F405 USB CDC-ACM"),
+            serial_number: None,
+            max_packet_size: 64,
+            max_power_ma: 100,
+            vbus_detection: false,
+        }
+    }
+}
+
+pub struct UsbCdcAcmBuffers<'d> {
+    pub ep_out: &'d mut [u8],
+    pub config_descriptor: &'d mut [u8],
+    pub bos_descriptor: &'d mut [u8],
+    pub msos_descriptor: &'d mut [u8],
+    pub control: &'d mut [u8],
+}
+
+pub struct UsbCdcAcm<'d> {
+    pub class: CdcAcmClass<'d, FsDriver<'d>>,
+    pub device: embassy_usb::UsbDevice<'d, FsDriver<'d>>,
+}
+
+impl<'d> UsbParts<'d> {
+    pub fn into_cdc_acm(
+        self,
+        cfg: &UsbCdcAcmConfig<'d>,
+        bufs: &'d mut UsbCdcAcmBuffers<'d>,
+        state: &'d mut State<'d>,
+    ) -> UsbCdcAcm<'d> {
+        let mut usb_cfg = hal::usb::Config::default();
+        usb_cfg.vbus_detection = cfg.vbus_detection;
+
+        let driver = hal::usb::Driver::new_fs(
+            self.otg_fs,
+            UsbFsIrqs,
+            self.dp,
+            self.dm,
+            bufs.ep_out,
+            usb_cfg,
+        );
+
+        let mut device_cfg = embassy_usb::Config::new(cfg.vid, cfg.pid);
+        device_cfg.manufacturer = cfg.manufacturer;
+        device_cfg.product = cfg.product;
+        device_cfg.serial_number = cfg.serial_number;
+        device_cfg.max_power = cfg.max_power_ma;
+        device_cfg.max_packet_size_0 = cfg.max_packet_size as u8;
+
+        let mut builder = Builder::new(
+            driver,
+            device_cfg,
+            bufs.config_descriptor,
+            bufs.bos_descriptor,
+            bufs.msos_descriptor,
+            bufs.control,
+        );
+
+        let class = CdcAcmClass::new(&mut builder, state, cfg.max_packet_size);
+        let device = builder.build();
+
+        UsbCdcAcm { class, device }
+    }
+}

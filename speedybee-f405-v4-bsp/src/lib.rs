@@ -9,7 +9,7 @@ pub mod dma;
 pub mod interrupts;
 pub mod parts;
 pub mod pins;
-pub mod usb_logger;
+pub mod usb;
 
 pub use board::Board;
 pub use clocks::config;
