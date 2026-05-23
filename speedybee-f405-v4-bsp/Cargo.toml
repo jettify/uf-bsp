@@ -17,6 +17,7 @@ embassy-stm32 = { workspace = true, features = [
   "exti",
 ] }
 embassy-usb = { workspace = true }
+embassy-sync = { workspace = true }
 embassy-usb-logger = "0.6.0"
 log = "0.4"
 static_cell = "2.1.1"

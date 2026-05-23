@@ -7,6 +7,8 @@
 Board support crates for common flight controllers, boards might be usefull not only
 for quadcopters and flight controllers, but also for robotics and rapid prototyping.
 
+Originally developed for the `uflight` flight-controller project, but useful as a standalone set of board support crates.
+
 > **Status:** This project is a work in progress. APIs, board coverage, and examples may change.
 
 1. [`TBS Lucid H7 FC`](https://www.team-blacksheep.com/products/prod:lucid_h7) (Exposes SWDIO/SWCLK pads; can be flashed with a debug probe or via DFU.)
