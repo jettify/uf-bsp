@@ -36,3 +36,4 @@ embedded-hal-bus = { workspace = true }
 embedded-hal-async = { workspace = true }
 icm426xx = { workspace = true }
 panic-halt = { workspace = true }
+uf-dps3xx = { workspace = true }

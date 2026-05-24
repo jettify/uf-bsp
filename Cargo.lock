@@ -1083,6 +1083,7 @@ dependencies = [
  "static_cell",
  "stm32-metapac",
  "uf-bsp-core",
+ "uf-dps3xx",
 ]
 
 [[package]]

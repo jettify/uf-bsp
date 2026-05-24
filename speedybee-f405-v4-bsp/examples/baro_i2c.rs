@@ -1,18 +1,17 @@
 #![no_std]
 #![no_main]
 
+#[path = "support/usb_logger.rs"]
+mod usb_logger;
+
 use bsp::hal::i2c::Config as I2cConfig;
 use bsp::hal::i2c::I2c;
 use bsp::hal::i2c::Master;
 use bsp::hal::mode::Blocking;
 use bsp::hal::time::Hertz;
-use cortex_m as _;
-use defmt::Debug2Format;
-use defmt::info;
-use defmt_rtt as _;
 use embassy_time::Timer;
-use panic_probe as _;
-use tbs_lucid_h7_bsp as bsp;
+use panic_halt as _;
+use speedybee_f405_v4_bsp as bsp;
 use uf_dps3xx::Config as DpsConfig;
 use uf_dps3xx::Dps3xx;
 use uf_dps3xx::Error as DpsError;
@@ -43,37 +42,40 @@ async fn init_dps<'d>(i2c: BoardI2c<'d>, config: DpsConfig) -> Result<BoardDps<'
     }
 }
 
-async fn run() -> Result<(), AppError> {
-    let p = bsp::hal::init(bsp::config());
-    let board = bsp::Board::new(p);
-
+async fn run(baro: bsp::parts::BaroParts<'static>) -> Result<(), AppError> {
     let mut cfg = I2cConfig::default();
     cfg.frequency = Hertz::khz(400);
 
     let i2c = I2c::new_blocking(
-        board.baro.i2c2,
-        board.baro.i2c2_scl,
-        board.baro.i2c2_sda,
+        baro.i2c1,
+        baro.i2c1_scl,
+        baro.i2c1_sda,
         cfg,
     );
 
     let dps_config = DpsConfig::default().temperature_source(TemperatureSource::External);
     let mut dps = init_dps(i2c, dps_config).await.map_err(|err| {
-        info!("dps3xx init failed: {:?}", Debug2Format(&err));
+        log::error!("dps3xx init failed: {:?}", err);
         AppError::Init
     })?;
     dps.start_background().map_err(|err| {
-        info!("dps3xx background start failed: {:?}", Debug2Format(&err));
+        log::error!("dps3xx background start failed: {:?}", err);
         AppError::Start
     })?;
 
-    info!("dps3xx initialized on I2C2");
+    log::info!("dps3xx initialized on I2C1");
 
     loop {
         match dps.try_read_sample() {
-            Ok(Some(s)) => info!("pressure_pa={} temp_c={}", s.pressure_pa, s.temperature_c),
-            Ok(None) => (),
-            Err(_) => info!("baro read error"),
+            Ok(Some(sample)) => {
+                log::info!(
+                    "pressure_pa={} temp_c={}",
+                    sample.pressure_pa,
+                    sample.temperature_c
+                );
+            }
+            Ok(None) => {}
+            Err(err) => log::error!("baro sample read error: {:?}", err),
         }
         Timer::after_millis(u64::from(dps.config().suggested_poll_period_ms())).await;
     }
@@ -81,17 +83,24 @@ async fn run() -> Result<(), AppError> {
 
 async fn fatal(error: AppError) -> ! {
     match error {
-        AppError::Init => info!("baro_i2c failed during init"),
-        AppError::Start => info!("baro_i2c failed during background start"),
+        AppError::Init => log::error!("baro_i2c failed during init"),
+        AppError::Start => log::error!("baro_i2c failed during background start"),
     }
+
     loop {
         Timer::after_millis(250).await;
     }
 }
 
 #[embassy_executor::main]
-async fn main(_spawner: embassy_executor::Spawner) {
-    if let Err(error) = run().await {
+async fn main(spawner: embassy_executor::Spawner) {
+    let p = bsp::hal::init(bsp::config_with_usb());
+    let board = bsp::Board::new(p);
+    let log = usb_logger::spawn_default(&spawner, board.usb, "SpeedyBee F405 Baro I2C");
+    log.wait_startup().await;
+    log::info!("logging online; starting baro_i2c");
+
+    if let Err(error) = run(board.baro).await {
         fatal(error).await;
     }
 }
