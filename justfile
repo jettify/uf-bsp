@@ -40,3 +40,6 @@ pedantic:
 
 # Run same testing commands as on CI server
 ci: build lint check-examples
+
+screen:
+ screen /dev/tty.usbmodem14101 115200
