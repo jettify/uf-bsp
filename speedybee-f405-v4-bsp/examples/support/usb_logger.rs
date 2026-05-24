@@ -12,9 +12,11 @@ pub fn init(
     usb: bsp::parts::UsbParts<'static>,
     product: &'static str,
 ) -> bsp::usb::UsbCdcAcm<'static> {
-    let mut cfg = bsp::usb::UsbCdcAcmConfig::default();
-    cfg.product = Some(product);
-    cfg.max_packet_size = embassy_usb_logger::MAX_PACKET_SIZE as u16;
+    let cfg = bsp::usb::UsbCdcAcmConfig {
+        product: Some(product),
+        max_packet_size: embassy_usb_logger::MAX_PACKET_SIZE as u16,
+        ..Default::default()
+    };
 
     usb.into_cdc_acm(&cfg, new_buffers(), new_state())
 }
@@ -38,7 +40,8 @@ async fn usb_log_task(usb_cdc: bsp::usb::UsbCdcAcm<'static>) -> ! {
     } = usb_cdc;
     let log_fut = embassy_usb_logger::with_class!(LOGGER_BUFFER_SIZE, LOGGER_LEVEL, logger_class);
 
-    join(device.run(), log_fut).await
+    join(device.run(), log_fut).await;
+    unreachable!()
 }
 
 pub fn spawn(
@@ -48,7 +51,14 @@ pub fn spawn(
     startup_window_ms: u64,
 ) -> UsbLog {
     let usb_cdc = init(usb, product);
-    spawner.must_spawn(usb_log_task(usb_cdc));
+    match usb_log_task(usb_cdc) {
+        Ok(token) => {
+            spawner.spawn(token);
+        }
+        Err(_) => {
+            // Logger startup is best-effort for examples.
+        }
+    }
     UsbLog { startup_window_ms }
 }
 
