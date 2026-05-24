@@ -1,12 +1,12 @@
-use embassy_usb::Builder;
-use embassy_usb::class::cdc_acm::CdcAcmClass;
 use embassy_usb::class::cdc_acm::State;
 
+use crate::core::usb_cdc;
 use crate::hal;
 use crate::interrupts::UsbFsIrqs;
 use crate::parts::UsbParts;
 
 pub type FsDriver<'d> = hal::usb::Driver<'d, hal::peripherals::USB_OTG_FS>;
+pub type UsbSerial<'d> = usb_cdc::CdcAcm<'d, FsDriver<'d>>;
 
 pub struct UsbSerialConfig<'a> {
     pub vid: u16,
@@ -40,11 +40,6 @@ pub struct UsbSerialBuffers<'d> {
     pub control: &'d mut [u8],
 }
 
-pub struct UsbSerial<'d> {
-    pub class: CdcAcmClass<'d, FsDriver<'d>>,
-    pub device: embassy_usb::UsbDevice<'d, FsDriver<'d>>,
-}
-
 impl<'d> UsbParts<'d> {
     pub fn into_usb_serial(
         self,
@@ -64,23 +59,22 @@ impl<'d> UsbParts<'d> {
             usb_cfg,
         );
 
-        let mut device_cfg = embassy_usb::Config::new(cfg.vid, cfg.pid);
-        device_cfg.manufacturer = cfg.manufacturer;
-        device_cfg.product = cfg.product;
-        device_cfg.serial_number = cfg.serial_number;
+        let core_cfg = usb_cdc::CdcAcmConfig {
+            vid: cfg.vid,
+            pid: cfg.pid,
+            manufacturer: cfg.manufacturer,
+            product: cfg.product,
+            serial_number: cfg.serial_number,
+            max_packet_size: cfg.max_packet_size,
+            max_power_ma: None,
+        };
+        let core_bufs = usb_cdc::CdcAcmBuffers {
+            config_descriptor: bufs.config_descriptor,
+            bos_descriptor: bufs.bos_descriptor,
+            msos_descriptor: bufs.msos_descriptor,
+            control: bufs.control,
+        };
 
-        let mut builder = Builder::new(
-            driver,
-            device_cfg,
-            bufs.config_descriptor,
-            bufs.bos_descriptor,
-            bufs.msos_descriptor,
-            bufs.control,
-        );
-
-        let class = CdcAcmClass::new(&mut builder, state, cfg.max_packet_size);
-        let device = builder.build();
-
-        UsbSerial { class, device }
+        usb_cdc::build_cdc_acm(driver, &core_cfg, core_bufs, state)
     }
 }

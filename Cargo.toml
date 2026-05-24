@@ -1,5 +1,5 @@
 [workspace]
-members = ["tbs-lucid-h7-bsp", "speedybee-f405-v4-bsp"]
+members = ["uf-bsp-core", "tbs-lucid-h7-bsp", "speedybee-f405-v4-bsp"]
 resolver = "3"
 
 [workspace.package]
@@ -24,7 +24,8 @@ embassy-executor = { version = "0.10.0", features = [
   "executor-thread",
 ] }
 embassy-futures = "0.1.2"
-embassy-sync = "0.7.2"
+embassy-sync = "0.8.0"
+uf-bsp-core = { path = "uf-bsp-core" }
 embassy-time = "0.5.0"
 embedded-hal-async = "1.0.0"
 panic-halt = "1.0.0"

@@ -18,6 +18,7 @@ embassy-stm32 = { workspace = true, features = [
 ] }
 embassy-usb = { workspace = true }
 stm32-metapac = { workspace = true }
+uf-bsp-core = { workspace = true }
 
 [dev-dependencies]
 cortex-m = { version = "0.7.6", features = [
