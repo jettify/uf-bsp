@@ -1,0 +1,35 @@
+target := "thumbv7em-none-eabihf"
+package := "speedybee-f405-v4-bsp"
+dfu_addr := "0x08000000"
+target_dir := "../target"
+
+# List available recipes
+default:
+  just --list
+
+# Build a SpeedyBee example and produce a .bin with the same name
+bin example:
+  cargo build --release -p {{package}} --target {{target}} --example {{example}}
+  arm-none-eabi-objcopy -O binary {{target_dir}}/{{target}}/release/examples/{{example}} {{target_dir}}/{{target}}/release/{{example}}.bin
+
+# Flash a prepared .bin over DFU
+dfu-flash example:
+  dfu-suffix -v 0483 -p df11 -a {{target_dir}}/{{target}}/release/{{example}}.bin
+  dfu-util -l
+  dfu-util -a 0 -s {{dfu_addr}}:leave -D {{target_dir}}/{{target}}/release/{{example}}.bin
+
+# Build and flash a SpeedyBee example over DFU
+flash example: (bin example) (dfu-flash example)
+
+# Convenience recipes for current examples
+flash-blinky:
+  just flash blinky
+
+flash-baro:
+  just flash baro_i2c
+
+flash-imu:
+  just flash imu_spi
+
+screen:
+  screen /dev/tty.usbmodem14101 115200
