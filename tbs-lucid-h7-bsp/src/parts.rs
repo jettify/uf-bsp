@@ -196,6 +196,15 @@ pub struct BaroParts<'d> {
     pub i2c2_sda: hal::Peri<'d, pins::I2c2Sda>,
 }
 
+impl<'d> BaroParts<'d> {
+    pub fn new_i2c_blocking(
+        self,
+        config: hal::i2c::Config,
+    ) -> hal::i2c::I2c<'d, hal::mode::Blocking, hal::i2c::Master> {
+        hal::i2c::I2c::new_blocking(self.i2c2, self.i2c2_scl, self.i2c2_sda, config)
+    }
+}
+
 pub struct SdioParts<'d> {
     pub sdmmc1: hal::Peri<'d, hal::peripherals::SDMMC1>,
     pub ck: hal::Peri<'d, pins::SdioCk>,
