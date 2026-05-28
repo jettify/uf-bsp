@@ -15,7 +15,7 @@ pub struct UsbCdcAcmConfig<'a> {
     pub product: Option<&'a str>,
     pub serial_number: Option<&'a str>,
     pub max_packet_size: u16,
-    pub max_power_ma: u16,
+    pub max_power_ma: Option<u16>,
     pub vbus_detection: bool,
 }
 
@@ -28,7 +28,7 @@ impl Default for UsbCdcAcmConfig<'_> {
             product: Some("SpeedyBee F405 USB CDC-ACM"),
             serial_number: None,
             max_packet_size: 64,
-            max_power_ma: 100,
+            max_power_ma: Some(100),
             vbus_detection: false,
         }
     }
@@ -43,7 +43,7 @@ pub struct UsbCdcAcmBuffers<'d> {
 }
 
 impl<'d> UsbParts<'d> {
-    pub fn into_cdc_acm(
+    pub fn into_usb_cdc_acm(
         self,
         cfg: &UsbCdcAcmConfig<'d>,
         bufs: &'d mut UsbCdcAcmBuffers<'d>,
@@ -68,7 +68,7 @@ impl<'d> UsbParts<'d> {
             product: cfg.product,
             serial_number: cfg.serial_number,
             max_packet_size: cfg.max_packet_size,
-            max_power_ma: Some(cfg.max_power_ma),
+            max_power_ma: cfg.max_power_ma,
         };
         let core_bufs = usb_cdc::CdcAcmBuffers {
             config_descriptor: bufs.config_descriptor,

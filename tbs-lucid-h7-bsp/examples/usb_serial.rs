@@ -55,7 +55,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut msos_descriptor = [0u8; 256];
     let mut control = [0u8; 64];
 
-    let mut bufs = bsp::usb::UsbSerialBuffers {
+    let mut bufs = bsp::usb::UsbCdcAcmBuffers {
         ep_out: &mut ep_out,
         config_descriptor: &mut config_descriptor,
         bos_descriptor: &mut bos_descriptor,
@@ -63,11 +63,11 @@ async fn main(_spawner: embassy_executor::Spawner) {
         control: &mut control,
     };
 
-    let cfg = bsp::usb::UsbSerialConfig::default();
+    let cfg = bsp::usb::UsbCdcAcmConfig::default();
     let mut state = State::new();
 
-    let usb = board.usb.into_usb_serial(&cfg, &mut bufs, &mut state);
-    let bsp::usb::UsbSerial {
+    let usb = board.usb.into_usb_cdc_acm(&cfg, &mut bufs, &mut state);
+    let bsp::usb::UsbCdcAcm {
         mut class,
         mut device,
     } = usb;

@@ -18,7 +18,7 @@ pub fn init(
         ..Default::default()
     };
 
-    usb.into_cdc_acm(&cfg, new_buffers(), new_state())
+    usb.into_usb_cdc_acm(&cfg, new_buffers(), new_state())
 }
 
 pub struct UsbLog {
