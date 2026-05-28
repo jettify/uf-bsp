@@ -1,8 +1,6 @@
 #![no_std]
 #![no_main]
 
-use bsp::hal::bind_interrupts;
-use bsp::hal::dma;
 use bsp::hal::exti;
 use bsp::hal::gpio::Level;
 use bsp::hal::gpio::Output;
@@ -10,7 +8,6 @@ use bsp::hal::gpio::Pull;
 use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
 use bsp::hal::interrupt::InterruptExt as _;
-use bsp::hal::peripherals;
 use bsp::hal::spi;
 use cortex_m as _;
 use defmt::info;
@@ -23,11 +20,6 @@ use tbs_lucid_h7_bsp as bsp;
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
-
-bind_interrupts!(struct Irqs {
-    DMA1_STREAM0 => dma::InterruptHandler<peripherals::DMA1_CH0>;
-    DMA1_STREAM1 => dma::InterruptHandler<peripherals::DMA1_CH1>;
-});
 
 static DRDY_LATCH_STATE: bsp::core::irq_latch::IrqLatchState =
     bsp::core::irq_latch::IrqLatchState::new();
@@ -50,17 +42,9 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
 
-    let spi = spi::Spi::new(
-        board.imu_primary.spi,
-        board.imu_primary.sck,
-        board.imu_primary.mosi,
-        board.imu_primary.miso,
-        board.dma.spi1.tx,
-        board.dma.spi1.rx,
-        Irqs,
-        spi_cfg,
-    );
-    let cs = Output::new(board.imu_primary.cs, Level::High, Speed::Low);
+    let imu = board.imu_primary.new_spi(spi_cfg);
+    let cs = Output::new(imu.cs, Level::High, Speed::Low);
+    let spi = imu.spi;
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
     let icm = icm426xx::ICM42688::new(spi_device);
@@ -81,12 +65,8 @@ async fn main(_spawner: embassy_executor::Spawner) {
         }
     };
 
-    let drdy_input = exti::ExtiInput::new_blocking(
-        board.imu_primary.int,
-        board.imu_primary.int_exti,
-        Pull::None,
-        exti::TriggerEdge::Rising,
-    );
+    let drdy_input =
+        exti::ExtiInput::new_blocking(imu.int, imu.int_exti, Pull::None, exti::TriggerEdge::Rising);
     let drdy = bsp::core::irq_latch::IrqLatch::new(drdy_input, &DRDY_LATCH_STATE);
     interrupt::EXTI2.set_priority(interrupt::Priority::P6);
     // SAFETY: `drdy_input` configured EXTI2 and the handler above clears the pending bit.

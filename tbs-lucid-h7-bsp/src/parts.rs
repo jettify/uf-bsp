@@ -1,12 +1,56 @@
 use crate::hal;
 use crate::pins;
 
+pub trait PrimaryImuIrqs:
+    hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH0 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH0>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH1 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH1>,
+    >
+{
+}
+
+impl<T> PrimaryImuIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH0 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH0>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH1 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH1>,
+        >
+{
+}
+
+pub trait SecondaryImuIrqs:
+    hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH6 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH6>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH7 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH7>,
+    >
+{
+}
+
+impl<T> SecondaryImuIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH6 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH6>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH7 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH7>,
+        >
+{
+}
+
 pub struct Leds<'d> {
     pub led0: hal::Peri<'d, pins::Led0>,
     pub led1: hal::Peri<'d, pins::Led1>,
 }
 
-pub struct ImuPrimaryParts<'d> {
+pub struct PrimaryImu<'d> {
     pub spi: hal::Peri<'d, hal::peripherals::SPI1>,
     pub sck: hal::Peri<'d, pins::Imu1Sck>,
     pub miso: hal::Peri<'d, pins::Imu1Miso>,
@@ -14,9 +58,45 @@ pub struct ImuPrimaryParts<'d> {
     pub cs: hal::Peri<'d, pins::Imu1Cs>,
     pub int: hal::Peri<'d, pins::Imu1Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
+    pub dma_tx: hal::Peri<'d, hal::peripherals::DMA1_CH0>,
+    pub dma_rx: hal::Peri<'d, hal::peripherals::DMA1_CH1>,
 }
 
-pub struct ImuSecondaryParts<'d> {
+pub struct PrimaryImuSpi<'d> {
+    pub spi: hal::spi::Spi<'d, hal::mode::Async, hal::spi::mode::Master>,
+    pub cs: hal::Peri<'d, pins::Imu1Cs>,
+    pub int: hal::Peri<'d, pins::Imu1Int>,
+    pub int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
+}
+
+impl<'d> PrimaryImu<'d> {
+    pub fn new_spi(self, config: hal::spi::Config) -> PrimaryImuSpi<'d> {
+        self.new_spi_with_irqs(crate::interrupts::PrimaryImuSpiIrqs, config)
+    }
+
+    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> PrimaryImuSpi<'d>
+    where
+        I: PrimaryImuIrqs + 'd,
+    {
+        PrimaryImuSpi {
+            spi: hal::spi::Spi::new(
+                self.spi,
+                self.sck,
+                self.mosi,
+                self.miso,
+                self.dma_tx,
+                self.dma_rx,
+                irqs,
+                config,
+            ),
+            cs: self.cs,
+            int: self.int,
+            int_exti: self.int_exti,
+        }
+    }
+}
+
+pub struct SecondaryImu<'d> {
     pub spi: hal::Peri<'d, hal::peripherals::SPI4>,
     pub sck: hal::Peri<'d, pins::Imu2Sck>,
     pub miso: hal::Peri<'d, pins::Imu2Miso>,
@@ -24,6 +104,42 @@ pub struct ImuSecondaryParts<'d> {
     pub cs: hal::Peri<'d, pins::Imu2Cs>,
     pub int: hal::Peri<'d, pins::Imu2Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
+    pub dma_tx: hal::Peri<'d, hal::peripherals::DMA1_CH6>,
+    pub dma_rx: hal::Peri<'d, hal::peripherals::DMA1_CH7>,
+}
+
+pub struct SecondaryImuSpi<'d> {
+    pub spi: hal::spi::Spi<'d, hal::mode::Async, hal::spi::mode::Master>,
+    pub cs: hal::Peri<'d, pins::Imu2Cs>,
+    pub int: hal::Peri<'d, pins::Imu2Int>,
+    pub int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
+}
+
+impl<'d> SecondaryImu<'d> {
+    pub fn new_spi(self, config: hal::spi::Config) -> SecondaryImuSpi<'d> {
+        self.new_spi_with_irqs(crate::interrupts::SecondaryImuSpiIrqs, config)
+    }
+
+    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> SecondaryImuSpi<'d>
+    where
+        I: SecondaryImuIrqs + 'd,
+    {
+        SecondaryImuSpi {
+            spi: hal::spi::Spi::new(
+                self.spi,
+                self.sck,
+                self.mosi,
+                self.miso,
+                self.dma_tx,
+                self.dma_rx,
+                irqs,
+                config,
+            ),
+            cs: self.cs,
+            int: self.int,
+            int_exti: self.int_exti,
+        }
+    }
 }
 
 pub struct OsdParts<'d> {

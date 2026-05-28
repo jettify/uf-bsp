@@ -4,8 +4,6 @@
 #[path = "support/usb_logger.rs"]
 mod usb_logger;
 
-use bsp::hal::bind_interrupts;
-use bsp::hal::dma;
 use bsp::hal::exti;
 use bsp::hal::gpio::Level;
 use bsp::hal::gpio::Output;
@@ -13,7 +11,6 @@ use bsp::hal::gpio::Pull;
 use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
 use bsp::hal::interrupt::InterruptExt as _;
-use bsp::hal::peripherals;
 use bsp::hal::spi;
 use embassy_time::Delay;
 use embassy_time::Duration;
@@ -26,11 +23,6 @@ use speedybee_f405_v4_bsp as bsp;
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
-
-bind_interrupts!(struct Irqs {
-    DMA2_STREAM3 => dma::InterruptHandler<peripherals::DMA2_CH3>;
-    DMA2_STREAM0 => dma::InterruptHandler<peripherals::DMA2_CH0>;
-});
 
 static DRDY_LATCH_STATE: bsp::core::irq_latch::IrqLatchState =
     bsp::core::irq_latch::IrqLatchState::new();
@@ -134,23 +126,20 @@ async fn main(spawner: embassy_executor::Spawner) {
     let led0 = Output::new(board.leds.led0, Level::Low, Speed::Low);
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
-    let Some(spi1_rx) = board.dma.spi1.rx else {
-        log::error!("SPI1 RX DMA unavailable");
-        blink_forever(led0, 250).await;
+
+    let imu = match board.imu_primary.new_spi(spi_cfg) {
+        Ok(imu) => imu,
+        Err(bsp::parts::NewSpiError::RxDmaUnavailable) => {
+            log::error!("SPI1 RX DMA unavailable");
+            blink_forever(led0, 250).await;
+        }
     };
 
-    let spi = spi::Spi::new(
-        board.imu_primary.spi,
-        board.imu_primary.sck,
-        board.imu_primary.mosi,
-        board.imu_primary.miso,
-        board.dma.spi1.tx,
-        spi1_rx,
-        Irqs,
-        spi_cfg,
-    );
+    let spi = imu.spi;
+    let cs = Output::new(imu.cs, Level::High, Speed::Low);
+    let drdy_input =
+        exti::ExtiInput::new_blocking(imu.int, imu.int_exti, Pull::None, exti::TriggerEdge::Rising);
 
-    let cs = Output::new(board.imu_primary.cs, Level::High, Speed::Low);
     let spi_device = match ExclusiveDevice::new_no_delay(spi, cs) {
         Ok(spi_device) => spi_device,
         Err(_) => {
@@ -174,12 +163,6 @@ async fn main(spawner: embassy_executor::Spawner) {
         }
     };
 
-    let drdy_input = exti::ExtiInput::new_blocking(
-        board.imu_primary.int,
-        board.imu_primary.int_exti,
-        Pull::None,
-        exti::TriggerEdge::Rising,
-    );
     let drdy = bsp::core::irq_latch::IrqLatch::new(drdy_input, &DRDY_LATCH_STATE);
     interrupt::EXTI4.set_priority(interrupt::Priority::P6);
     // SAFETY: `drdy_input` configured EXTI4 and the handler above clears the pending bit.

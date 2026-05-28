@@ -1,7 +1,6 @@
 use crate::dma::Adc1Dma;
 use crate::dma::DmaLayout;
 use crate::dma::DmaResources;
-use crate::dma::Spi1Dma;
 use crate::dma::Spi2Dma;
 use crate::dma::Spi3Dma;
 use crate::dma::Usart2Dma;
@@ -9,10 +8,10 @@ use crate::hal;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
 use crate::parts::BaroParts;
-use crate::parts::ImuPrimaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
 use crate::parts::OsdParts;
+use crate::parts::PrimaryImu;
 use crate::parts::ReceiverParts;
 use crate::parts::SdcardSpiParts;
 use crate::parts::UartPortsParts;
@@ -20,7 +19,7 @@ use crate::parts::UsbParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
-    pub imu_primary: ImuPrimaryParts<'d>,
+    pub imu_primary: PrimaryImu<'d>,
     pub osd: OsdParts<'d>,
     pub sdcard_spi: SdcardSpiParts<'d>,
     pub receiver: ReceiverParts<'d>,
@@ -46,7 +45,7 @@ impl Board<'_> {
 
         Self {
             leds: Leds { led0: p.PC13 },
-            imu_primary: ImuPrimaryParts {
+            imu_primary: PrimaryImu {
                 spi: p.SPI1,
                 sck: p.PA5,
                 miso: p.PA6,
@@ -54,6 +53,8 @@ impl Board<'_> {
                 cs: p.PA4,
                 int: p.PC4,
                 int_exti: p.EXTI4,
+                dma_tx: p.DMA2_CH3,
+                dma_rx: spi1_rx_dma,
             },
             osd: OsdParts {
                 spi: p.SPI2,
@@ -124,10 +125,6 @@ impl Board<'_> {
                 rssi: p.PC5,
             },
             dma: DmaResources {
-                spi1: Spi1Dma {
-                    tx: p.DMA2_CH3,
-                    rx: spi1_rx_dma,
-                },
                 spi2: Spi2Dma {
                     tx: p.DMA1_CH4,
                     rx: p.DMA1_CH3,

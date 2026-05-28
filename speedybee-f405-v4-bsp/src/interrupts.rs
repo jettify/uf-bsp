@@ -9,3 +9,8 @@ hal::bind_interrupts!(pub struct ReceiverUartIrqs {
 hal::bind_interrupts!(pub struct UsbFsIrqs {
     OTG_FS => hal::usb::InterruptHandler<hal::peripherals::USB_OTG_FS>;
 });
+
+hal::bind_interrupts!(pub struct PrimaryImuSpiIrqs {
+    DMA2_STREAM3 => hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>;
+    DMA2_STREAM0 => hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>;
+});

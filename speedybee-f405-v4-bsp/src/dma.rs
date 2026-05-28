@@ -1,10 +1,5 @@
 use crate::hal;
 
-pub struct Spi1Dma<'d> {
-    pub tx: hal::Peri<'d, hal::peripherals::DMA2_CH3>,
-    pub rx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH0>>,
-}
-
 pub struct Spi2Dma<'d> {
     pub tx: hal::Peri<'d, hal::peripherals::DMA1_CH4>,
     pub rx: hal::Peri<'d, hal::peripherals::DMA1_CH3>,
@@ -25,7 +20,6 @@ pub struct Usart2Dma<'d> {
 }
 
 pub struct DmaResources<'d> {
-    pub spi1: Spi1Dma<'d>,
     pub spi2: Spi2Dma<'d>,
     pub spi3: Spi3Dma<'d>,
     pub adc1: Adc1Dma<'d>,

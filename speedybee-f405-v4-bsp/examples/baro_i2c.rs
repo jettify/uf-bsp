@@ -46,12 +46,7 @@ async fn run(baro: bsp::parts::BaroParts<'static>) -> Result<(), AppError> {
     let mut cfg = I2cConfig::default();
     cfg.frequency = Hertz::khz(400);
 
-    let i2c = I2c::new_blocking(
-        baro.i2c1,
-        baro.i2c1_scl,
-        baro.i2c1_sda,
-        cfg,
-    );
+    let i2c = I2c::new_blocking(baro.i2c1, baro.i2c1_scl, baro.i2c1_sda, cfg);
 
     let dps_config = DpsConfig::default().temperature_source(TemperatureSource::External);
     let mut dps = init_dps(i2c, dps_config).await.map_err(|err| {

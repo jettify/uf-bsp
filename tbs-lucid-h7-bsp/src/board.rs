@@ -1,30 +1,28 @@
 use crate::dma::Adc1Dma;
 use crate::dma::Adc3Dma;
 use crate::dma::DmaResources;
-use crate::dma::Spi1Dma;
 use crate::dma::Spi2Dma;
-use crate::dma::Spi4Dma;
 use crate::dma::Usart6Dma;
 use crate::hal;
 use crate::parts::AdcParts;
 use crate::parts::AuxParts;
 use crate::parts::BaroParts;
 use crate::parts::I2cParts;
-use crate::parts::ImuPrimaryParts;
-use crate::parts::ImuSecondaryParts;
 use crate::parts::Leds;
 use crate::parts::MotorParts;
 use crate::parts::OsdParts;
+use crate::parts::PrimaryImu;
 use crate::parts::ReceiverParts;
 use crate::parts::SdioParts;
+use crate::parts::SecondaryImu;
 use crate::parts::Spi3Parts;
 use crate::parts::UartPortsParts;
 use crate::parts::UsbParts;
 
 pub struct Board<'d> {
     pub leds: Leds<'d>,
-    pub imu_primary: ImuPrimaryParts<'d>,
-    pub imu_secondary: ImuSecondaryParts<'d>,
+    pub imu_primary: PrimaryImu<'d>,
+    pub imu_secondary: SecondaryImu<'d>,
     pub osd: OsdParts<'d>,
     pub spi3: Spi3Parts<'d>,
     pub receiver: ReceiverParts<'d>,
@@ -46,7 +44,7 @@ impl Board<'_> {
                 led0: p.PE3,
                 led1: p.PE4,
             },
-            imu_primary: ImuPrimaryParts {
+            imu_primary: PrimaryImu {
                 spi: p.SPI1,
                 sck: p.PA5,
                 miso: p.PA6,
@@ -54,8 +52,10 @@ impl Board<'_> {
                 cs: p.PC15,
                 int: p.PB2,
                 int_exti: p.EXTI2,
+                dma_tx: p.DMA1_CH0,
+                dma_rx: p.DMA1_CH1,
             },
-            imu_secondary: ImuSecondaryParts {
+            imu_secondary: SecondaryImu {
                 spi: p.SPI4,
                 sck: p.PE12,
                 miso: p.PE13,
@@ -63,6 +63,8 @@ impl Board<'_> {
                 cs: p.PE11,
                 int: p.PE15,
                 int_exti: p.EXTI15,
+                dma_tx: p.DMA1_CH6,
+                dma_rx: p.DMA1_CH7,
             },
             osd: OsdParts {
                 spi: p.SPI2,
@@ -153,17 +155,9 @@ impl Board<'_> {
                 external3: p.PA7,
             },
             dma: DmaResources {
-                spi1: Spi1Dma {
-                    tx: p.DMA1_CH0,
-                    rx: p.DMA1_CH1,
-                },
                 spi2: Spi2Dma {
                     tx: p.DMA1_CH2,
                     rx: p.DMA1_CH3,
-                },
-                spi4: Spi4Dma {
-                    tx: p.DMA1_CH6,
-                    rx: p.DMA1_CH7,
                 },
                 adc1: Adc1Dma { ch: p.DMA2_CH1 },
                 adc3: Adc3Dma { ch: p.DMA2_CH2 },

@@ -1,11 +1,33 @@
 use crate::hal;
 use crate::pins;
 
+pub trait PrimaryImuIrqs:
+    hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA2_CH3 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+    >
+{
+}
+
+impl<T> PrimaryImuIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA2_CH3 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+        >
+{
+}
+
 pub struct Leds<'d> {
     pub led0: hal::Peri<'d, pins::Led0>,
 }
 
-pub struct ImuPrimaryParts<'d> {
+pub struct PrimaryImu<'d> {
     pub spi: hal::Peri<'d, hal::peripherals::SPI1>,
     pub sck: hal::Peri<'d, pins::Imu1Sck>,
     pub miso: hal::Peri<'d, pins::Imu1Miso>,
@@ -13,6 +35,55 @@ pub struct ImuPrimaryParts<'d> {
     pub cs: hal::Peri<'d, pins::Imu1Cs>,
     pub int: hal::Peri<'d, pins::Imu1Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
+    pub dma_tx: hal::Peri<'d, hal::peripherals::DMA2_CH3>,
+    pub dma_rx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH0>>,
+}
+
+pub struct PrimaryImuSpi<'d> {
+    pub spi: hal::spi::Spi<'d, hal::mode::Async, hal::spi::mode::Master>,
+    pub cs: hal::Peri<'d, pins::Imu1Cs>,
+    pub int: hal::Peri<'d, pins::Imu1Int>,
+    pub int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum NewSpiError {
+    RxDmaUnavailable,
+}
+
+impl<'d> PrimaryImu<'d> {
+    pub fn new_spi(self, config: hal::spi::Config) -> Result<PrimaryImuSpi<'d>, NewSpiError> {
+        self.new_spi_with_irqs(crate::interrupts::PrimaryImuSpiIrqs, config)
+    }
+
+    pub fn new_spi_with_irqs<I>(
+        self,
+        irqs: I,
+        config: hal::spi::Config,
+    ) -> Result<PrimaryImuSpi<'d>, NewSpiError>
+    where
+        I: PrimaryImuIrqs + 'd,
+    {
+        let Some(dma_rx) = self.dma_rx else {
+            return Err(NewSpiError::RxDmaUnavailable);
+        };
+
+        Ok(PrimaryImuSpi {
+            spi: hal::spi::Spi::new(
+                self.spi,
+                self.sck,
+                self.mosi,
+                self.miso,
+                self.dma_tx,
+                dma_rx,
+                irqs,
+                config,
+            ),
+            cs: self.cs,
+            int: self.int,
+            int_exti: self.int_exti,
+        })
+    }
 }
 
 pub struct OsdParts<'d> {

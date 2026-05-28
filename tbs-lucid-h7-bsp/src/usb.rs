@@ -56,14 +56,7 @@ impl<'d> UsbParts<'d> {
             |ep_out, vbus_detection| {
                 let mut usb_cfg = hal::usb::Config::default();
                 usb_cfg.vbus_detection = vbus_detection;
-                hal::usb::Driver::new_fs(
-                    self.otg_fs,
-                    UsbFsIrqs,
-                    self.dp,
-                    self.dm,
-                    ep_out,
-                    usb_cfg,
-                )
+                hal::usb::Driver::new_fs(self.otg_fs, UsbFsIrqs, self.dp, self.dm, ep_out, usb_cfg)
             },
             &descriptor_cfg,
             cfg.vbus_detection,
