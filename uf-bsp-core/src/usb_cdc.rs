@@ -35,6 +35,14 @@ pub struct CdcAcmBuffers<'d> {
     pub control: &'d mut [u8],
 }
 
+pub struct CdcAcmBuffersWithEpOut<'d> {
+    pub ep_out: &'d mut [u8],
+    pub config_descriptor: &'d mut [u8],
+    pub bos_descriptor: &'d mut [u8],
+    pub msos_descriptor: &'d mut [u8],
+    pub control: &'d mut [u8],
+}
+
 pub struct CdcAcm<'d, D: Driver<'d>> {
     pub class: CdcAcmClass<'d, D>,
     pub device: UsbDevice<'d, D>,
@@ -68,4 +76,33 @@ pub fn build_cdc_acm<'d, D: Driver<'d>>(
     let device = builder.build();
 
     CdcAcm { class, device }
+}
+
+pub fn build_usb_cdc_acm<'d, D, MakeDriver>(
+    make_driver: MakeDriver,
+    cfg: &CdcAcmConfig<'d>,
+    vbus_detection: bool,
+    bufs: &'d mut CdcAcmBuffersWithEpOut<'d>,
+    state: &'d mut State<'d>,
+) -> CdcAcm<'d, D>
+where
+    D: Driver<'d>,
+    MakeDriver: FnOnce(&'d mut [u8], bool) -> D,
+{
+    let CdcAcmBuffersWithEpOut {
+        ep_out,
+        config_descriptor,
+        bos_descriptor,
+        msos_descriptor,
+        control,
+    } = bufs;
+
+    let driver = make_driver(ep_out, vbus_detection);
+    let cdc_acm_bufs = CdcAcmBuffers {
+        config_descriptor,
+        bos_descriptor,
+        msos_descriptor,
+        control,
+    };
+    build_cdc_acm(driver, cfg, cdc_acm_bufs, state)
 }
