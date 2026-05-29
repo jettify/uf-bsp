@@ -1,12 +1,6 @@
 [workspace]
 members = ["uf-bsp-core", "tbs-lucid-h7-bsp", "speedybee-f405-v4-bsp"]
 resolver = "3"
-categories = [
-  "embedded",
-  "no-std",
-  "aerospace::drones",
-  "aerospace::unmanned-aerial-vehicles",
-]
 
 [workspace.package]
 version = "0.1.0"
@@ -16,6 +10,12 @@ license-file = "LICENSE"
 authors = ["Mykola Novik <mykola@uflight.dev>"]
 repository = "https://github.com/jettify/uf-bsp"
 homepage = "https://github.com/jettify/uf-bsp"
+categories = [
+  "embedded",
+  "no-std",
+  "aerospace::drones",
+  "aerospace::unmanned-aerial-vehicles",
+]
 
 [workspace.dependencies]
 embassy-stm32 = "0.6.0"
