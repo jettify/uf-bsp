@@ -1,6 +1,12 @@
 [workspace]
 members = ["uf-bsp-core", "tbs-lucid-h7-bsp", "speedybee-f405-v4-bsp"]
 resolver = "3"
+categories = [
+  "embedded",
+  "no-std",
+  "aerospace::drones",
+  "aerospace::unmanned-aerial-vehicles",
+]
 
 [workspace.package]
 version = "0.1.0"

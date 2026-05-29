@@ -60,5 +60,6 @@ pub fn config_with_usb() -> hal::Config {
     cfg.rcc.hsi48 = Some(hal::rcc::Hsi48Config {
         sync_from_usb: true,
     });
+    cfg.rcc.mux.usbsel = hal::rcc::mux::Usbsel::HSI48;
     cfg
 }
