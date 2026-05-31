@@ -19,3 +19,8 @@ hal::bind_interrupts!(pub struct SecondaryImuSpiIrqs {
     DMA1_STREAM6 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH6>;
     DMA1_STREAM7 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH7>;
 });
+
+hal::bind_interrupts!(pub struct OsdSpiIrqs {
+    DMA1_STREAM2 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH2>;
+    DMA1_STREAM3 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH3>;
+});

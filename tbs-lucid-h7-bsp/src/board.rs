@@ -1,7 +1,6 @@
 use crate::dma::Adc1Dma;
 use crate::dma::Adc3Dma;
 use crate::dma::DmaResources;
-use crate::dma::Spi2Dma;
 use crate::dma::Usart6Dma;
 use crate::hal;
 use crate::parts::AdcParts;
@@ -72,6 +71,8 @@ impl Board<'_> {
                 miso: p.PB14,
                 mosi: p.PB15,
                 cs: p.PB12,
+                dma_tx: p.DMA1_CH2,
+                dma_rx: p.DMA1_CH3,
             },
             spi3: Spi3Parts {
                 spi: p.SPI3,
@@ -155,10 +156,6 @@ impl Board<'_> {
                 external3: p.PA7,
             },
             dma: DmaResources {
-                spi2: Spi2Dma {
-                    tx: p.DMA1_CH2,
-                    rx: p.DMA1_CH3,
-                },
                 adc1: Adc1Dma { ch: p.DMA2_CH1 },
                 adc3: Adc3Dma { ch: p.DMA2_CH2 },
                 usart6: Usart6Dma { tx: None, rx: None },

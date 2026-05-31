@@ -92,6 +92,60 @@ pub struct OsdParts<'d> {
     pub miso: hal::Peri<'d, pins::OsdMiso>,
     pub mosi: hal::Peri<'d, pins::OsdMosi>,
     pub cs: hal::Peri<'d, pins::OsdCs>,
+    pub dma_tx: hal::Peri<'d, hal::peripherals::DMA1_CH4>,
+    pub dma_rx: hal::Peri<'d, hal::peripherals::DMA1_CH3>,
+}
+
+pub struct OsdSpi<'d> {
+    pub spi: hal::spi::Spi<'d, hal::mode::Async, hal::spi::mode::Master>,
+    pub cs: hal::Peri<'d, pins::OsdCs>,
+}
+
+pub trait OsdSpiIrqs:
+    hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH4 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH4>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA1_CH3 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA1_CH3>,
+    >
+{
+}
+
+impl<T> OsdSpiIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH4 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH4>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA1_CH3 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA1_CH3>,
+        >
+{
+}
+
+impl<'d> OsdParts<'d> {
+    pub fn new_spi(self, config: hal::spi::Config) -> OsdSpi<'d> {
+        self.new_spi_with_irqs(crate::interrupts::OsdSpiIrqs, config)
+    }
+
+    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> OsdSpi<'d>
+    where
+        I: OsdSpiIrqs + 'd,
+    {
+        OsdSpi {
+            spi: hal::spi::Spi::new(
+                self.spi,
+                self.sck,
+                self.mosi,
+                self.miso,
+                self.dma_tx,
+                self.dma_rx,
+                irqs,
+                config,
+            ),
+            cs: self.cs,
+        }
+    }
 }
 
 pub struct SdcardSpiParts<'d> {

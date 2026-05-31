@@ -1,7 +1,6 @@
 use crate::dma::Adc1Dma;
 use crate::dma::DmaLayout;
 use crate::dma::DmaResources;
-use crate::dma::Spi2Dma;
 use crate::dma::Spi3Dma;
 use crate::dma::Usart2Dma;
 use crate::hal;
@@ -62,6 +61,8 @@ impl Board<'_> {
                 miso: p.PC2,
                 mosi: p.PC3,
                 cs: p.PB12,
+                dma_tx: p.DMA1_CH4,
+                dma_rx: p.DMA1_CH3,
             },
             sdcard_spi: SdcardSpiParts {
                 spi: p.SPI3,
@@ -125,10 +126,6 @@ impl Board<'_> {
                 rssi: p.PC5,
             },
             dma: DmaResources {
-                spi2: Spi2Dma {
-                    tx: p.DMA1_CH4,
-                    rx: p.DMA1_CH3,
-                },
                 spi3: Spi3Dma {
                     tx: p.DMA1_CH5,
                     rx: p.DMA1_CH0,

@@ -14,3 +14,8 @@ hal::bind_interrupts!(pub struct PrimaryImuSpiIrqs {
     DMA2_STREAM3 => hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>;
     DMA2_STREAM0 => hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>;
 });
+
+hal::bind_interrupts!(pub struct OsdSpiIrqs {
+    DMA1_STREAM4 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH4>;
+    DMA1_STREAM3 => hal::dma::InterruptHandler<hal::peripherals::DMA1_CH3>;
+});
