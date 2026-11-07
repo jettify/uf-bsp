@@ -13,3 +13,7 @@ workspace = true
 [dependencies]
 embassy-sync = { workspace = true }
 embassy-usb = { workspace = true }
+
+[dev-dependencies]
+critical-section = { version = "1.2.0", features = ["std"] }
+

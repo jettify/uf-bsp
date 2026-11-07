@@ -4,17 +4,19 @@
 
 /// Bind selected board peripherals in the application crate.
 ///
-/// Supported selections: `primary_imu`, `secondary_imu`, `osd`, `receiver`, `usb_fs`.
-/// Each selection ends with `;`. Only select groups whose default DMA mapping
+/// Supported selections: `primary_imu`, `primary_imu_drdy`, `secondary_imu`, `secondary_imu_drdy`,
+/// `osd`, `receiver`, `usb_fs`.
+/// Each selection ends with `;`. Only select groups whose default DMA or EXTI mapping
 /// you use. Invoke once per application (or use disjoint groups in separate invocations).
 /// For custom vectors, omit the corresponding group and use `hal::bind_interrupts!`
 /// in a separate invocation with its own binding type.
 /// Each vector must have exactly one definition, including any shared handlers.
-/// EXTI and executor interrupts remain application-owned and are not selected here.
+/// Executor interrupts remain application-owned and are not selected here.
 ///
 /// ```ignore
 /// bsp::bind_board_interrupts!(pub struct Irqs {
 ///     primary_imu;
+///     primary_imu_drdy;
 ///     usb_fs;
 /// });
 /// let imu = board.imu_primary.new_spi(Irqs, spi_config);
@@ -34,11 +36,23 @@ macro_rules! bind_board_interrupts {
             DMA1_STREAM1 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA1_CH1>;
         ] $($rest)*);
     };
+    (@collect [$($decl:tt)*] [$($bindings:tt)*] primary_imu_drdy; $($rest:tt)*) => {
+        $crate::bind_board_interrupts!(@collect [$($decl)*] [
+            $($bindings)*
+            EXTI2 => $crate::parts::PrimaryImuDrdyInterruptHandler;
+        ] $($rest)*);
+    };
     (@collect [$($decl:tt)*] [$($bindings:tt)*] secondary_imu; $($rest:tt)*) => {
         $crate::bind_board_interrupts!(@collect [$($decl)*] [
             $($bindings)*
             DMA1_STREAM6 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA1_CH6>;
             DMA1_STREAM7 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA1_CH7>;
+        ] $($rest)*);
+    };
+    (@collect [$($decl:tt)*] [$($bindings:tt)*] secondary_imu_drdy; $($rest:tt)*) => {
+        $crate::bind_board_interrupts!(@collect [$($decl)*] [
+            $($bindings)*
+            EXTI15_10 => $crate::parts::SecondaryImuDrdyInterruptHandler;
         ] $($rest)*);
     };
     (@collect [$($decl:tt)*] [$($bindings:tt)*] osd; $($rest:tt)*) => {

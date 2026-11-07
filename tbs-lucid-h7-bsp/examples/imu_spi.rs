@@ -7,7 +7,6 @@ use bsp::hal::gpio::Output;
 use bsp::hal::gpio::Pull;
 use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
-use bsp::hal::interrupt::InterruptExt as _;
 use bsp::hal::spi;
 use cortex_m as _;
 use defmt::info;
@@ -19,20 +18,12 @@ use tbs_lucid_h7_bsp as bsp;
 
 bsp::bind_board_interrupts!(struct Irqs {
     primary_imu;
+    primary_imu_drdy;
 });
 
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
-
-static DRDY_LATCH_STATE: bsp::core::irq_latch::IrqLatchState =
-    bsp::core::irq_latch::IrqLatchState::new();
-
-#[bsp::hal::interrupt]
-fn EXTI2() {
-    bsp::pac::EXTI.pr(0).write(|w| w.set_line(2, true));
-    DRDY_LATCH_STATE.on_irq();
-}
 
 #[embassy_executor::main]
 async fn main(_spawner: embassy_executor::Spawner) {
@@ -69,18 +60,19 @@ async fn main(_spawner: embassy_executor::Spawner) {
         }
     };
 
-    let drdy_input =
-        exti::ExtiInput::new_blocking(imu.int, imu.int_exti, Pull::None, exti::TriggerEdge::Rising);
-    let drdy = bsp::core::irq_latch::IrqLatch::new(drdy_input, &DRDY_LATCH_STATE);
-    interrupt::EXTI2.set_priority(interrupt::Priority::P6);
-    // SAFETY: `drdy_input` configured EXTI2 and the handler above clears the pending bit.
-    unsafe { interrupt::EXTI2.enable() };
+    let mut drdy = bsp::parts::setup_primary_imu_drdy(
+        imu.int,
+        imu.int_exti,
+        Irqs,
+        Pull::None,
+        exti::TriggerEdge::Rising,
+        interrupt::Priority::P6,
+    );
     info!("imu initialized at {} Hz; waiting for drdy", IMU_ODR_HZ);
 
-    let mut last_drdy = drdy.current_count();
     let mut sample_count: u32 = 0;
     loop {
-        drdy.wait(&mut last_drdy).await;
+        let _pulses = drdy.wait().await;
 
         loop {
             match icm.read_sample().await {

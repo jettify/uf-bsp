@@ -1,5 +1,112 @@
+use crate::core::irq_latch::IrqLatch;
+use crate::core::irq_latch::IrqLatchState;
 use crate::hal;
+use crate::hal::interrupt::InterruptExt as _;
+use crate::hal::interrupt::typelevel::Interrupt as _;
+use crate::pac;
 use crate::pins;
+
+static PRIMARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
+static SECONDARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
+
+pub type ImuDrdyLatch<'d> = IrqLatch<hal::exti::ExtiInput<'d, hal::mode::Blocking>>;
+
+/// Interrupt handler for the primary IMU data-ready line (`PC2` / `EXTI2`).
+pub struct PrimaryImuDrdyInterruptHandler;
+
+impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI2>
+    for PrimaryImuDrdyInterruptHandler
+{
+    unsafe fn on_interrupt() {
+        pac::EXTI.pr(0).write(|w| w.set_line(2, true));
+        PRIMARY_IMU_DRDY_STATE.on_irq();
+    }
+}
+
+pub trait PrimaryImuDrdyIrqs:
+    hal::interrupt::typelevel::Binding<hal::interrupt::typelevel::EXTI2, PrimaryImuDrdyInterruptHandler>
+{
+}
+
+impl<T> PrimaryImuDrdyIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            hal::interrupt::typelevel::EXTI2,
+            PrimaryImuDrdyInterruptHandler,
+        >
+{
+}
+
+/// Interrupt handler for the secondary IMU data-ready line (`PE15` / `EXTI15_10`).
+pub struct SecondaryImuDrdyInterruptHandler;
+
+impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI15_10>
+    for SecondaryImuDrdyInterruptHandler
+{
+    unsafe fn on_interrupt() {
+        pac::EXTI.pr(0).write(|w| w.set_line(15, true));
+        SECONDARY_IMU_DRDY_STATE.on_irq();
+    }
+}
+
+pub trait SecondaryImuDrdyIrqs:
+    hal::interrupt::typelevel::Binding<
+        hal::interrupt::typelevel::EXTI15_10,
+        SecondaryImuDrdyInterruptHandler,
+    >
+{
+}
+
+impl<T> SecondaryImuDrdyIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            hal::interrupt::typelevel::EXTI15_10,
+            SecondaryImuDrdyInterruptHandler,
+        >
+{
+}
+
+/// Configure and enable the primary IMU data-ready (`EXTI2`) interrupt latch.
+pub fn setup_primary_imu_drdy<'d, I>(
+    int: hal::Peri<'d, pins::Imu1Int>,
+    int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
+    _irqs: I,
+    pull: hal::gpio::Pull,
+    edge: hal::exti::TriggerEdge,
+    priority: hal::interrupt::Priority,
+) -> ImuDrdyLatch<'d>
+where
+    I: PrimaryImuDrdyIrqs,
+{
+    hal::interrupt::typelevel::EXTI2::unpend();
+    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
+    let latch = IrqLatch::new_unchecked(input, &PRIMARY_IMU_DRDY_STATE);
+    hal::interrupt::EXTI2.set_priority(priority);
+    // SAFETY: `I: PrimaryImuDrdyIrqs` proves `EXTI2` is bound to `PrimaryImuDrdyInterruptHandler`,
+    // which clears the pending bit on line 2, and `input` has configured `EXTI2`.
+    unsafe { hal::interrupt::typelevel::EXTI2::enable() };
+    latch
+}
+
+/// Configure and enable the secondary IMU data-ready (`EXTI15_10`) interrupt latch.
+pub fn setup_secondary_imu_drdy<'d, I>(
+    int: hal::Peri<'d, pins::Imu2Int>,
+    int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
+    _irqs: I,
+    pull: hal::gpio::Pull,
+    edge: hal::exti::TriggerEdge,
+    priority: hal::interrupt::Priority,
+) -> ImuDrdyLatch<'d>
+where
+    I: SecondaryImuDrdyIrqs,
+{
+    hal::interrupt::typelevel::EXTI15_10::unpend();
+    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
+    let latch = IrqLatch::new_unchecked(input, &SECONDARY_IMU_DRDY_STATE);
+    hal::interrupt::EXTI15_10.set_priority(priority);
+    // SAFETY: `I: SecondaryImuDrdyIrqs` proves `EXTI15_10` is bound to `SecondaryImuDrdyInterruptHandler`,
+    // which clears the pending bit on line 15, and `input` has configured `EXTI15`.
+    unsafe { hal::interrupt::typelevel::EXTI15_10::enable() };
+    latch
+}
 
 pub trait PrimaryImuIrqs:
     hal::interrupt::typelevel::Binding<

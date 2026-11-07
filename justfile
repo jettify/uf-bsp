@@ -21,10 +21,15 @@ clean:
 
 # Lint source code CI linter
 lint:
+  cargo clippy -p uf-bsp-core --all-targets -- -D warnings
   cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf -- -D warnings
   cargo clippy --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --examples -- -D warnings
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf -- -D warnings
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples -- -D warnings
+
+# Run host-side unit tests
+test:
+  cargo test -p uf-bsp-core
 
 # Check board examples
 check-examples:
@@ -44,7 +49,7 @@ build-examples:
   cargo build --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples
 
 # Run same testing commands as on CI server
-ci: build lint check-examples build-examples
+ci: test build lint check-examples build-examples
 
 screen:
  screen /dev/tty.usbmodem14101 115200

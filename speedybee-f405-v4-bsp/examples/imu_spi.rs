@@ -10,7 +10,6 @@ use bsp::hal::gpio::Output;
 use bsp::hal::gpio::Pull;
 use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
-use bsp::hal::interrupt::InterruptExt as _;
 use bsp::hal::spi;
 use embassy_time::Delay;
 use embassy_time::Duration;
@@ -20,23 +19,14 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use panic_halt as _;
 use speedybee_f405_v4_bsp as bsp;
 
-bsp::hal::bind_interrupts!(struct Irqs {
-    DMA2_STREAM3 => bsp::hal::dma::InterruptHandler<bsp::hal::peripherals::DMA2_CH3>;
-    DMA2_STREAM0 => bsp::hal::dma::InterruptHandler<bsp::hal::peripherals::DMA2_CH0>;
+bsp::bind_board_interrupts!(struct Irqs {
+    primary_imu;
+    primary_imu_drdy;
 });
 
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
-
-static DRDY_LATCH_STATE: bsp::core::irq_latch::IrqLatchState =
-    bsp::core::irq_latch::IrqLatchState::new();
-
-#[bsp::hal::interrupt]
-fn EXTI4() {
-    bsp::pac::EXTI.pr(0).write(|w| w.set_line(4, true));
-    DRDY_LATCH_STATE.on_irq();
-}
 
 async fn blink_forever(mut led: Output<'static>, period_ms: u64) -> ! {
     loop {
@@ -74,18 +64,17 @@ where
 
 async fn run_imu_demo<SPI, DRDY>(
     mut icm: icm426xx::ICM42688<SPI, icm426xx::Ready>,
-    drdy: bsp::core::irq_latch::IrqLatch<DRDY>,
+    mut drdy: bsp::core::irq_latch::IrqLatch<DRDY>,
     mut led0: Output<'static>,
 ) -> !
 where
     SPI: SpiDevice,
     DRDY: 'static,
 {
-    let mut last_drdy = drdy.current_count();
     let mut sample_count = 0u32;
 
     loop {
-        drdy.wait(&mut last_drdy).await;
+        let _pulses = drdy.wait().await;
 
         loop {
             match icm.read_sample().await {
@@ -142,8 +131,6 @@ async fn main(spawner: embassy_executor::Spawner) {
 
     let spi = imu.spi;
     let cs = Output::new(imu.cs, Level::High, Speed::Low);
-    let drdy_input =
-        exti::ExtiInput::new_blocking(imu.int, imu.int_exti, Pull::None, exti::TriggerEdge::Rising);
 
     let spi_device = match ExclusiveDevice::new_no_delay(spi, cs) {
         Ok(spi_device) => spi_device,
@@ -168,10 +155,14 @@ async fn main(spawner: embassy_executor::Spawner) {
         }
     };
 
-    let drdy = bsp::core::irq_latch::IrqLatch::new(drdy_input, &DRDY_LATCH_STATE);
-    interrupt::EXTI4.set_priority(interrupt::Priority::P6);
-    // SAFETY: `drdy_input` configured EXTI4 and the handler above clears the pending bit.
-    unsafe { interrupt::EXTI4.enable() };
+    let drdy = bsp::parts::setup_primary_imu_drdy(
+        imu.int,
+        imu.int_exti,
+        Irqs,
+        Pull::None,
+        exti::TriggerEdge::Rising,
+        interrupt::Priority::P6,
+    );
 
     run_imu_demo(icm, drdy, led0).await
 }

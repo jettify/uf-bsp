@@ -1,5 +1,61 @@
+use crate::core::irq_latch::IrqLatch;
+use crate::core::irq_latch::IrqLatchState;
 use crate::hal;
+use crate::hal::interrupt::InterruptExt as _;
+use crate::hal::interrupt::typelevel::Interrupt as _;
+use crate::pac;
 use crate::pins;
+
+static PRIMARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
+
+pub type ImuDrdyLatch<'d> = IrqLatch<hal::exti::ExtiInput<'d, hal::mode::Blocking>>;
+
+/// Interrupt handler for the primary IMU data-ready line (`PA4` / `EXTI4`).
+pub struct PrimaryImuDrdyInterruptHandler;
+
+impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI4>
+    for PrimaryImuDrdyInterruptHandler
+{
+    unsafe fn on_interrupt() {
+        pac::EXTI.pr(0).write(|w| w.set_line(4, true));
+        PRIMARY_IMU_DRDY_STATE.on_irq();
+    }
+}
+
+pub trait PrimaryImuDrdyIrqs:
+    hal::interrupt::typelevel::Binding<hal::interrupt::typelevel::EXTI4, PrimaryImuDrdyInterruptHandler>
+{
+}
+
+impl<T> PrimaryImuDrdyIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            hal::interrupt::typelevel::EXTI4,
+            PrimaryImuDrdyInterruptHandler,
+        >
+{
+}
+
+/// Configure and enable the primary IMU data-ready (`EXTI4`) interrupt latch.
+pub fn setup_primary_imu_drdy<'d, I>(
+    int: hal::Peri<'d, pins::Imu1Int>,
+    int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
+    _irqs: I,
+    pull: hal::gpio::Pull,
+    edge: hal::exti::TriggerEdge,
+    priority: hal::interrupt::Priority,
+) -> ImuDrdyLatch<'d>
+where
+    I: PrimaryImuDrdyIrqs,
+{
+    hal::interrupt::typelevel::EXTI4::unpend();
+    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
+    let latch = IrqLatch::new_unchecked(input, &PRIMARY_IMU_DRDY_STATE);
+    hal::interrupt::EXTI4.set_priority(priority);
+    // SAFETY: `I: PrimaryImuDrdyIrqs` proves `EXTI4` is bound to `PrimaryImuDrdyInterruptHandler`,
+    // which clears the pending bit on line 4, and `input` has configured `EXTI4`.
+    unsafe { hal::interrupt::typelevel::EXTI4::enable() };
+    latch
+}
 
 pub trait PrimaryImuIrqs:
     hal::interrupt::typelevel::Binding<
