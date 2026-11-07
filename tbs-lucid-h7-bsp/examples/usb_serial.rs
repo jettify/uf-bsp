@@ -12,6 +12,10 @@ use embassy_usb::class::cdc_acm::State;
 use panic_probe as _;
 use tbs_lucid_h7_bsp as bsp;
 
+bsp::bind_board_interrupts!(struct Irqs {
+    usb_fs;
+});
+
 async fn serial_writer<'a>(class: &mut CdcAcmClass<'a, bsp::usb::FsDriver<'a>>) -> ! {
     let mut counter: u32 = 0;
     loop {
@@ -66,7 +70,9 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let cfg = bsp::usb::UsbCdcAcmConfig::default();
     let mut state = State::new();
 
-    let usb = board.usb.into_usb_cdc_acm(&cfg, &mut bufs, &mut state);
+    let usb = board
+        .usb
+        .into_usb_cdc_acm(Irqs, &cfg, &mut bufs, &mut state);
     let bsp::usb::UsbCdcAcm {
         mut class,
         mut device,

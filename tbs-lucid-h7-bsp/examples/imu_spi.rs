@@ -17,6 +17,10 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use panic_probe as _;
 use tbs_lucid_h7_bsp as bsp;
 
+bsp::bind_board_interrupts!(struct Irqs {
+    primary_imu;
+});
+
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
@@ -42,7 +46,7 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
 
-    let imu = board.imu_primary.new_spi(spi_cfg);
+    let imu = board.imu_primary.new_spi(Irqs, spi_cfg);
     let cs = Output::new(imu.cs, Level::High, Speed::Low);
     let spi = imu.spi;
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();

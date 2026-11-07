@@ -4,6 +4,10 @@ use static_cell::StaticCell;
 
 use speedybee_f405_v4_bsp as bsp;
 
+bsp::bind_board_interrupts!(struct Irqs {
+    usb_fs;
+});
+
 const LOGGER_BUFFER_SIZE: usize = 1024;
 const LOGGER_LEVEL: log::LevelFilter = log::LevelFilter::Info;
 const DEFAULT_STARTUP_WINDOW_MS: u64 = 1_000;
@@ -18,7 +22,7 @@ pub fn init(
         ..Default::default()
     };
 
-    usb.into_usb_cdc_acm(&cfg, new_buffers(), new_state())
+    usb.into_usb_cdc_acm(Irqs, &cfg, new_buffers(), new_state())
 }
 
 pub struct UsbLog {
