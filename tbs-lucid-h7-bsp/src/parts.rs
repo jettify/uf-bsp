@@ -270,6 +270,10 @@ pub struct SdioParts<'d> {
 }
 
 pub struct AuxParts<'d> {
+    /// Servo 1/2: CH1/CH2, sharing one time base.
+    pub tim15: hal::Peri<'d, hal::peripherals::TIM15>,
+    /// LED strip: CH1.
+    pub tim1: hal::Peri<'d, hal::peripherals::TIM1>,
     pub servo1: hal::Peri<'d, pins::Servo1>,
     pub servo2: hal::Peri<'d, pins::Servo2>,
     pub led_strip: hal::Peri<'d, pins::LedStrip>,
@@ -280,6 +284,8 @@ pub struct AuxParts<'d> {
 }
 
 pub struct MotorParts<'d> {
+    /// M7/M8: CH1/CH2.
+    pub tim4: hal::Peri<'d, hal::peripherals::TIM4>,
     pub tim3: hal::Peri<'d, hal::peripherals::TIM3>,
     pub tim5: hal::Peri<'d, hal::peripherals::TIM5>,
     pub m1: hal::Peri<'d, pins::Motor1>,

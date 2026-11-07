@@ -10,8 +10,10 @@ pub mod dma;
 pub mod interrupts;
 pub mod parts;
 pub mod pins;
+pub mod unassigned;
 pub mod usb;
 
 pub use board::Board;
 pub use clocks::config;
 pub use clocks::config_with_usb;
+pub use unassigned::UnassignedPeripherals;

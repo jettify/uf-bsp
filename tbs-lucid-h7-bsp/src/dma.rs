@@ -9,8 +9,8 @@ pub struct Adc3Dma<'d> {
 }
 
 pub struct Usart6Dma<'d> {
-    pub tx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH5>>,
-    pub rx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH6>>,
+    pub tx: hal::Peri<'d, hal::peripherals::DMA2_CH5>,
+    pub rx: hal::Peri<'d, hal::peripherals::DMA2_CH6>,
 }
 
 pub struct DmaResources<'d> {

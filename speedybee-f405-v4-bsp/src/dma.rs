@@ -10,7 +10,10 @@ pub struct Adc1Dma<'d> {
 }
 
 pub struct Usart2Dma<'d> {
-    pub tx: Option<hal::Peri<'d, hal::peripherals::DMA1_CH6>>,
+    /// USART2 TX stream.
+    pub tx: hal::Peri<'d, hal::peripherals::DMA1_CH6>,
+    /// Unavailable by default: SPI3 TX owns DMA1_CH5. Move
+    /// `board.dma.spi3.tx` into a USART2 RX driver to give up SPI3 TX DMA.
     pub rx: Option<hal::Peri<'d, hal::peripherals::DMA1_CH5>>,
 }
 

@@ -14,7 +14,7 @@ workspace = true
 [dependencies]
 embassy-stm32 = { workspace = true, features = [
   "stm32h743zi",
-  "time-driver-any",
+  "time-driver-tim12",
   "exti",
 ] }
 embassy-usb = { workspace = true }

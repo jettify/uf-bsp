@@ -201,6 +201,14 @@ impl<'d> BaroParts<'d> {
 }
 
 pub struct MotorParts<'d> {
+    /// M1/M2: CH1/CH2.
+    pub tim4: hal::Peri<'d, hal::peripherals::TIM4>,
+    /// M3/M4: CH3/CH4.
+    pub tim3: hal::Peri<'d, hal::peripherals::TIM3>,
+    /// M5/M6: CH3/CH4; also supports aux complementary outputs.
+    pub tim8: hal::Peri<'d, hal::peripherals::TIM8>,
+    /// M7/M8: CH3/CH1.
+    pub tim2: hal::Peri<'d, hal::peripherals::TIM2>,
     pub m1: hal::Peri<'d, pins::Motor1>,
     pub m2: hal::Peri<'d, pins::Motor2>,
     pub m3: hal::Peri<'d, pins::Motor3>,
@@ -219,6 +227,10 @@ pub struct AdcParts<'d> {
 }
 
 pub struct AuxParts<'d> {
+    /// LED strip: CH1.
+    pub tim1: hal::Peri<'d, hal::peripherals::TIM1>,
+    /// Camera/servo: CH1/CH2 at AF9, sharing one time base.
+    pub tim12: hal::Peri<'d, hal::peripherals::TIM12>,
     pub beeper: hal::Peri<'d, pins::Beeper>,
     pub servo1: hal::Peri<'d, pins::Servo1>,
     pub led_strip: hal::Peri<'d, pins::LedStrip>,
