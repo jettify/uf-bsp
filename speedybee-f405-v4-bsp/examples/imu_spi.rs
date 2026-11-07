@@ -20,6 +20,11 @@ use embedded_hal_bus::spi::ExclusiveDevice;
 use panic_halt as _;
 use speedybee_f405_v4_bsp as bsp;
 
+bsp::hal::bind_interrupts!(struct Irqs {
+    DMA2_STREAM3 => bsp::hal::dma::InterruptHandler<bsp::hal::peripherals::DMA2_CH3>;
+    DMA2_STREAM0 => bsp::hal::dma::InterruptHandler<bsp::hal::peripherals::DMA2_CH0>;
+});
+
 const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
@@ -127,7 +132,7 @@ async fn main(spawner: embassy_executor::Spawner) {
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
 
-    let imu = match board.imu_primary.new_spi(spi_cfg) {
+    let imu = match board.imu_primary.new_spi(Irqs, spi_cfg) {
         Ok(imu) => imu,
         Err(bsp::parts::NewSpiError::RxDmaUnavailable) => {
             log::error!("SPI1 RX DMA unavailable");

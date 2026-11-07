@@ -2,7 +2,6 @@ use embassy_usb::class::cdc_acm::State;
 
 use crate::core::usb_cdc;
 use crate::hal;
-use crate::interrupts::UsbFsIrqs;
 use crate::parts::UsbParts;
 
 pub type FsDriver<'d> = hal::usb::Driver<'d, hal::peripherals::USB_OTG_FS>;
@@ -36,12 +35,20 @@ impl Default for UsbCdcAcmConfig<'_> {
 }
 
 impl<'d> UsbParts<'d> {
-    pub fn into_usb_cdc_acm(
+    /// Construct USB CDC-ACM using application-owned interrupt bindings.
+    pub fn into_usb_cdc_acm<I>(
         self,
+        irqs: I,
         cfg: &UsbCdcAcmConfig<'d>,
         bufs: &'d mut UsbCdcAcmBuffers<'d>,
         state: &'d mut State<'d>,
-    ) -> UsbCdcAcm<'d> {
+    ) -> UsbCdcAcm<'d>
+    where
+        I: hal::interrupt::typelevel::Binding<
+                hal::interrupt::typelevel::OTG_FS,
+                hal::usb::InterruptHandler<hal::peripherals::USB_OTG_FS>,
+            > + 'd,
+    {
         let descriptor_cfg = usb_cdc::CdcAcmConfig {
             vid: cfg.vid,
             pid: cfg.pid,
@@ -56,7 +63,7 @@ impl<'d> UsbParts<'d> {
             |ep_out, vbus_detection| {
                 let mut usb_cfg = hal::usb::Config::default();
                 usb_cfg.vbus_detection = vbus_detection;
-                hal::usb::Driver::new_fs(self.otg_fs, UsbFsIrqs, self.dp, self.dm, ep_out, usb_cfg)
+                hal::usb::Driver::new_fs(self.otg_fs, irqs, self.dp, self.dm, ep_out, usb_cfg)
             },
             &descriptor_cfg,
             cfg.vbus_detection,

@@ -70,11 +70,8 @@ pub struct PrimaryImuSpi<'d> {
 }
 
 impl<'d> PrimaryImu<'d> {
-    pub fn new_spi(self, config: hal::spi::Config) -> PrimaryImuSpi<'d> {
-        self.new_spi_with_irqs(crate::interrupts::PrimaryImuSpiIrqs, config)
-    }
-
-    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> PrimaryImuSpi<'d>
+    /// Construct async SPI using application-owned interrupt bindings.
+    pub fn new_spi<I>(self, irqs: I, config: hal::spi::Config) -> PrimaryImuSpi<'d>
     where
         I: PrimaryImuIrqs + 'd,
     {
@@ -116,11 +113,8 @@ pub struct SecondaryImuSpi<'d> {
 }
 
 impl<'d> SecondaryImu<'d> {
-    pub fn new_spi(self, config: hal::spi::Config) -> SecondaryImuSpi<'d> {
-        self.new_spi_with_irqs(crate::interrupts::SecondaryImuSpiIrqs, config)
-    }
-
-    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> SecondaryImuSpi<'d>
+    /// Construct async SPI using application-owned interrupt bindings.
+    pub fn new_spi<I>(self, irqs: I, config: hal::spi::Config) -> SecondaryImuSpi<'d>
     where
         I: SecondaryImuIrqs + 'd,
     {
@@ -180,11 +174,8 @@ impl<T> OsdSpiIrqs for T where
 }
 
 impl<'d> OsdParts<'d> {
-    pub fn new_spi(self, config: hal::spi::Config) -> OsdSpi<'d> {
-        self.new_spi_with_irqs(crate::interrupts::OsdSpiIrqs, config)
-    }
-
-    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> OsdSpi<'d>
+    /// Construct async SPI using application-owned interrupt bindings.
+    pub fn new_spi<I>(self, irqs: I, config: hal::spi::Config) -> OsdSpi<'d>
     where
         I: OsdSpiIrqs + 'd,
     {

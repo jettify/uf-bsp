@@ -52,11 +52,8 @@ pub enum NewSpiError {
 }
 
 impl<'d> PrimaryImu<'d> {
-    pub fn new_spi(self, config: hal::spi::Config) -> Result<PrimaryImuSpi<'d>, NewSpiError> {
-        self.new_spi_with_irqs(crate::interrupts::PrimaryImuSpiIrqs, config)
-    }
-
-    pub fn new_spi_with_irqs<I>(
+    /// Construct async SPI using application-owned interrupt bindings.
+    pub fn new_spi<I>(
         self,
         irqs: I,
         config: hal::spi::Config,
@@ -124,11 +121,8 @@ impl<T> OsdSpiIrqs for T where
 }
 
 impl<'d> OsdParts<'d> {
-    pub fn new_spi(self, config: hal::spi::Config) -> OsdSpi<'d> {
-        self.new_spi_with_irqs(crate::interrupts::OsdSpiIrqs, config)
-    }
-
-    pub fn new_spi_with_irqs<I>(self, irqs: I, config: hal::spi::Config) -> OsdSpi<'d>
+    /// Construct async SPI using application-owned interrupt bindings.
+    pub fn new_spi<I>(self, irqs: I, config: hal::spi::Config) -> OsdSpi<'d>
     where
         I: OsdSpiIrqs + 'd,
     {

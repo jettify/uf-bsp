@@ -38,8 +38,13 @@ pedantic:
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf -- -W clippy::pedantic
   cargo clippy --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples -- -W clippy::pedantic
 
+# Link examples to catch duplicate or missing interrupt vectors
+build-examples:
+  cargo build --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --examples
+  cargo build --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --examples
+
 # Run same testing commands as on CI server
-ci: build lint check-examples
+ci: build lint check-examples build-examples
 
 screen:
  screen /dev/tty.usbmodem14101 115200
