@@ -63,7 +63,6 @@ pub struct UnassignedPeripherals<'d> {
     pub dma1_ch2: hal::Peri<'d, hal::peripherals::DMA1_CH2>,
     pub dma1_ch7: hal::Peri<'d, hal::peripherals::DMA1_CH7>,
     pub dma2_ch1: hal::Peri<'d, hal::peripherals::DMA2_CH1>,
-    pub dma2_ch2: hal::Peri<'d, hal::peripherals::DMA2_CH2>,
     pub dma2_ch4: hal::Peri<'d, hal::peripherals::DMA2_CH4>,
     pub dma2_ch5: hal::Peri<'d, hal::peripherals::DMA2_CH5>,
     pub dma2_ch6: hal::Peri<'d, hal::peripherals::DMA2_CH6>,

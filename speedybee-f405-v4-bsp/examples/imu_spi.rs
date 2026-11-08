@@ -121,13 +121,7 @@ async fn main(spawner: embassy_executor::Spawner) {
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
 
-    let imu = match board.imu_primary.new_spi(Irqs, spi_cfg) {
-        Ok(imu) => imu,
-        Err(bsp::parts::NewSpiError::RxDmaUnavailable) => {
-            log::error!("SPI1 RX DMA unavailable");
-            blink_forever(led0, 250).await;
-        }
-    };
+    let imu = board.imu_primary.new_spi(Irqs, spi_cfg);
 
     let spi = imu.spi;
     let cs = Output::new(imu.cs, Level::High, Speed::Low);

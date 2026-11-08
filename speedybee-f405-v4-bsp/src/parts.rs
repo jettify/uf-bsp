@@ -66,8 +66,8 @@ pub trait PrimaryImuIrqs:
         <hal::peripherals::DMA2_CH3 as hal::dma::ChannelInstance>::Interrupt,
         hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>,
     > + hal::interrupt::typelevel::Binding<
-        <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
-        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+        <hal::peripherals::DMA2_CH2 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH2>,
     >
 {
 }
@@ -77,8 +77,8 @@ impl<T> PrimaryImuIrqs for T where
             <hal::peripherals::DMA2_CH3 as hal::dma::ChannelInstance>::Interrupt,
             hal::dma::InterruptHandler<hal::peripherals::DMA2_CH3>,
         > + hal::interrupt::typelevel::Binding<
-            <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
-            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+            <hal::peripherals::DMA2_CH2 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH2>,
         >
 {
 }
@@ -96,7 +96,7 @@ pub struct PrimaryImu<'d> {
     pub int: hal::Peri<'d, pins::Imu1Int>,
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
     pub dma_tx: hal::Peri<'d, hal::peripherals::DMA2_CH3>,
-    pub dma_rx: Option<hal::Peri<'d, hal::peripherals::DMA2_CH0>>,
+    pub dma_rx: hal::Peri<'d, hal::peripherals::DMA2_CH2>,
 }
 
 pub struct PrimaryImuSpi<'d> {
@@ -106,40 +106,27 @@ pub struct PrimaryImuSpi<'d> {
     pub int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
 }
 
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum NewSpiError {
-    RxDmaUnavailable,
-}
-
 impl<'d> PrimaryImu<'d> {
     /// Construct async SPI using application-owned interrupt bindings.
-    pub fn new_spi<I>(
-        self,
-        irqs: I,
-        config: hal::spi::Config,
-    ) -> Result<PrimaryImuSpi<'d>, NewSpiError>
+    pub fn new_spi<I>(self, irqs: I, config: hal::spi::Config) -> PrimaryImuSpi<'d>
     where
         I: PrimaryImuIrqs + 'd,
     {
-        let Some(dma_rx) = self.dma_rx else {
-            return Err(NewSpiError::RxDmaUnavailable);
-        };
-
-        Ok(PrimaryImuSpi {
+        PrimaryImuSpi {
             spi: hal::spi::Spi::new(
                 self.spi,
                 self.sck,
                 self.mosi,
                 self.miso,
                 self.dma_tx,
-                dma_rx,
+                self.dma_rx,
                 irqs,
                 config,
             ),
             cs: self.cs,
             int: self.int,
             int_exti: self.int_exti,
-        })
+        }
     }
 }
 

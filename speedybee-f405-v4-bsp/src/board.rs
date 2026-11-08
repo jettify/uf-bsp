@@ -1,5 +1,4 @@
 use crate::dma::Adc1Dma;
-use crate::dma::DmaLayout;
 use crate::dma::DmaResources;
 use crate::dma::Spi3Dma;
 use crate::dma::Usart2Dma;
@@ -35,15 +34,11 @@ pub struct Board<'d> {
 }
 
 impl Board<'_> {
-    /// Partition all HAL resources using the default IMU DMA layout.
+    /// Partition every returned HAL token into board parts or `unassigned`.
+    /// ADC1 and SPI1 RX use independent DMA streams (DMA2_CH0 and DMA2_CH2).
     /// TIM9 is reserved internally by the Embassy time driver.
-    pub fn new(p: hal::Peripherals) -> Self {
-        Self::new_with_dma_layout(p, DmaLayout::ImuSpiPreferred)
-    }
-
-    /// Partition every returned HAL token, selecting the owner of DMA2_CH0.
     #[deny(unused_variables)]
-    pub fn new_with_dma_layout(p: hal::Peripherals, layout: DmaLayout) -> Self {
+    pub fn new(p: hal::Peripherals) -> Self {
         let hal::Peripherals {
             PA0: pa0,
             PA1: pa1,
@@ -180,11 +175,6 @@ impl Board<'_> {
             DMA2_CH7: dma2_ch7,
         } = p;
 
-        let (spi1_rx_dma, adc1_dma) = match layout {
-            DmaLayout::ImuSpiPreferred => (Some(dma2_ch0), None),
-            DmaLayout::Adc1Preferred => (None, Some(dma2_ch0)),
-        };
-
         Self {
             unassigned: UnassignedPeripherals {
                 pa13,
@@ -244,7 +234,6 @@ impl Board<'_> {
                 dma1_ch2,
                 dma1_ch7,
                 dma2_ch1,
-                dma2_ch2,
                 dma2_ch4,
                 dma2_ch5,
                 dma2_ch6,
@@ -260,7 +249,7 @@ impl Board<'_> {
                 int: pc4,
                 int_exti: exti4,
                 dma_tx: dma2_ch3,
-                dma_rx: spi1_rx_dma,
+                dma_rx: dma2_ch2,
             },
             osd: OsdParts {
                 spi: spi2,
@@ -343,7 +332,7 @@ impl Board<'_> {
                     tx: dma1_ch5,
                     rx: dma1_ch0,
                 },
-                adc1: Adc1Dma { ch: adc1_dma },
+                adc1: Adc1Dma { ch: dma2_ch0 },
                 usart2: Usart2Dma {
                     tx: dma1_ch6,
                     rx: None,

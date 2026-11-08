@@ -32,7 +32,7 @@ macro_rules! bind_board_interrupts {
         $crate::bind_board_interrupts!(@collect [$($decl)*] [
             $($bindings)*
             DMA2_STREAM3 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA2_CH3>;
-            DMA2_STREAM0 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA2_CH0>;
+            DMA2_STREAM2 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA2_CH2>;
         ] $($rest)*);
     };
     (@collect [$($decl:tt)*] [$($bindings:tt)*] primary_imu_drdy; $($rest:tt)*) => {

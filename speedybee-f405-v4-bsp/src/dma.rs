@@ -6,7 +6,7 @@ pub struct Spi3Dma<'d> {
 }
 
 pub struct Adc1Dma<'d> {
-    pub ch: Option<hal::Peri<'d, hal::peripherals::DMA2_CH0>>,
+    pub ch: hal::Peri<'d, hal::peripherals::DMA2_CH0>,
 }
 
 pub struct Usart2Dma<'d> {
@@ -21,10 +21,4 @@ pub struct DmaResources<'d> {
     pub spi3: Spi3Dma<'d>,
     pub adc1: Adc1Dma<'d>,
     pub usart2: Usart2Dma<'d>,
-}
-
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
-pub enum DmaLayout {
-    ImuSpiPreferred,
-    Adc1Preferred,
 }
