@@ -527,24 +527,36 @@ impl Board<'_> {
                 rx: pc7,
             },
             uarts: UartPortsParts {
-                uart1: usart1,
-                uart1_tx: pa9,
-                uart1_rx: pa10,
-                uart2: usart2,
-                uart2_tx: pd5,
-                uart2_rx: pd6,
-                uart3: usart3,
-                uart3_tx: pd8,
-                uart3_rx: pd9,
-                uart4,
-                uart4_tx: pb9,
-                uart4_rx: pb8,
-                uart7,
-                uart7_tx: pe8,
-                uart7_rx: pe7,
-                uart8,
-                uart8_tx: pe1,
-                uart8_rx: pe0,
+                uart1: crate::core::capabilities::UartPort {
+                    uart: usart1,
+                    tx: pa9,
+                    rx: pa10,
+                },
+                uart2: crate::core::capabilities::UartPort {
+                    uart: usart2,
+                    tx: pd5,
+                    rx: pd6,
+                },
+                uart3: crate::core::capabilities::UartPort {
+                    uart: usart3,
+                    tx: pd8,
+                    rx: pd9,
+                },
+                uart4: crate::core::capabilities::UartPort {
+                    uart: uart4,
+                    tx: pb9,
+                    rx: pb8,
+                },
+                uart7: crate::core::capabilities::UartPort {
+                    uart: uart7,
+                    tx: pe8,
+                    rx: pe7,
+                },
+                uart8: crate::core::capabilities::UartPort {
+                    uart: uart8,
+                    tx: pe1,
+                    rx: pe0,
+                },
             },
             i2c: I2cParts {
                 i2c1,
@@ -613,5 +625,19 @@ impl Board<'_> {
                 dp: pa12,
             },
         }
+    }
+}
+
+impl<'d> crate::core::capabilities::BoardCapabilities for Board<'d> {
+    const NAME: &'static str = "TBS_LUCID_H7";
+    type PrimaryImu = PrimaryImu<'d>;
+    type Storage = SdioParts<'d>;
+
+    fn primary_imu(&self) -> &Self::PrimaryImu {
+        &self.imu_primary
+    }
+
+    fn storage(&self) -> &Self::Storage {
+        &self.sdio
     }
 }

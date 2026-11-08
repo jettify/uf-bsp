@@ -1,3 +1,11 @@
+use crate::core::capabilities::AnalogScale;
+use crate::core::capabilities::BlockingI2c;
+use crate::core::capabilities::ImuAlignment;
+use crate::core::capabilities::ImuMetadata;
+use crate::core::capabilities::PinPolarity;
+use crate::core::capabilities::StorageBus;
+use crate::core::capabilities::StorageCapability;
+use crate::core::capabilities::UartPort;
 use crate::core::irq_latch::IrqLatch;
 use crate::core::irq_latch::IrqLatchClaimError;
 use crate::core::irq_latch::IrqLatchState;
@@ -316,31 +324,44 @@ pub struct Spi3Parts<'d> {
     pub mosi: hal::Peri<'d, pins::Spi3Mosi>,
 }
 
-pub struct ReceiverParts<'d> {
-    pub uart: hal::Peri<'d, hal::peripherals::USART6>,
-    pub tx: hal::Peri<'d, pins::ReceiverTx>,
-    pub rx: hal::Peri<'d, pins::ReceiverRx>,
-}
+/// Receiver UART, grouped identically to the general-purpose UARTs.
+pub type ReceiverParts<'d> = UartPort<
+    hal::Peri<'d, hal::peripherals::USART6>,
+    hal::Peri<'d, pins::ReceiverTx>,
+    hal::Peri<'d, pins::ReceiverRx>,
+>;
 
 pub struct UartPortsParts<'d> {
-    pub uart1: hal::Peri<'d, hal::peripherals::USART1>,
-    pub uart1_tx: hal::Peri<'d, pins::Uart1Tx>,
-    pub uart1_rx: hal::Peri<'d, pins::Uart1Rx>,
-    pub uart2: hal::Peri<'d, hal::peripherals::USART2>,
-    pub uart2_tx: hal::Peri<'d, pins::Uart2Tx>,
-    pub uart2_rx: hal::Peri<'d, pins::Uart2Rx>,
-    pub uart3: hal::Peri<'d, hal::peripherals::USART3>,
-    pub uart3_tx: hal::Peri<'d, pins::Uart3Tx>,
-    pub uart3_rx: hal::Peri<'d, pins::Uart3Rx>,
-    pub uart4: hal::Peri<'d, hal::peripherals::UART4>,
-    pub uart4_tx: hal::Peri<'d, pins::Uart4Tx>,
-    pub uart4_rx: hal::Peri<'d, pins::Uart4Rx>,
-    pub uart7: hal::Peri<'d, hal::peripherals::UART7>,
-    pub uart7_tx: hal::Peri<'d, pins::Uart7Tx>,
-    pub uart7_rx: hal::Peri<'d, pins::Uart7Rx>,
-    pub uart8: hal::Peri<'d, hal::peripherals::UART8>,
-    pub uart8_tx: hal::Peri<'d, pins::Uart8Tx>,
-    pub uart8_rx: hal::Peri<'d, pins::Uart8Rx>,
+    pub uart1: UartPort<
+        hal::Peri<'d, hal::peripherals::USART1>,
+        hal::Peri<'d, pins::Uart1Tx>,
+        hal::Peri<'d, pins::Uart1Rx>,
+    >,
+    pub uart2: UartPort<
+        hal::Peri<'d, hal::peripherals::USART2>,
+        hal::Peri<'d, pins::Uart2Tx>,
+        hal::Peri<'d, pins::Uart2Rx>,
+    >,
+    pub uart3: UartPort<
+        hal::Peri<'d, hal::peripherals::USART3>,
+        hal::Peri<'d, pins::Uart3Tx>,
+        hal::Peri<'d, pins::Uart3Rx>,
+    >,
+    pub uart4: UartPort<
+        hal::Peri<'d, hal::peripherals::UART4>,
+        hal::Peri<'d, pins::Uart4Tx>,
+        hal::Peri<'d, pins::Uart4Rx>,
+    >,
+    pub uart7: UartPort<
+        hal::Peri<'d, hal::peripherals::UART7>,
+        hal::Peri<'d, pins::Uart7Tx>,
+        hal::Peri<'d, pins::Uart7Rx>,
+    >,
+    pub uart8: UartPort<
+        hal::Peri<'d, hal::peripherals::UART8>,
+        hal::Peri<'d, pins::Uart8Tx>,
+        hal::Peri<'d, pins::Uart8Rx>,
+    >,
 }
 
 pub struct I2cParts<'d> {
@@ -418,4 +439,55 @@ pub struct UsbParts<'d> {
     pub otg_fs: hal::Peri<'d, hal::peripherals::USB_OTG_FS>,
     pub dm: hal::Peri<'d, pins::UsbDm>,
     pub dp: hal::Peri<'d, pins::UsbDp>,
+}
+
+// Metadata is transcribed from docs/tbs_lucid_config.h.
+impl ImuMetadata for PrimaryImu<'_> {
+    const ALIGNMENT: ImuAlignment = ImuAlignment::Cw90DegFlip;
+}
+
+impl PrimaryImu<'_> {
+    pub const ALIGNMENT: ImuAlignment = <Self as ImuMetadata>::ALIGNMENT;
+}
+
+impl StorageCapability for SdioParts<'_> {
+    const BUS: StorageBus = StorageBus::Sdmmc { data_lines: 4 };
+}
+
+impl SdioParts<'_> {
+    pub const BUS: StorageBus = <Self as StorageCapability>::BUS;
+}
+
+impl AuxParts<'_> {
+    pub const BEEPER_POLARITY: PinPolarity = PinPolarity::ActiveLow;
+}
+
+impl Leds<'_> {
+    /// The target header does not specify LED polarity.
+    pub const LED0_POLARITY: Option<PinPolarity> = None;
+    pub const LED1_POLARITY: Option<PinPolarity> = None;
+}
+
+impl AdcParts<'_> {
+    pub const SCALE: AnalogScale = AnalogScale {
+        voltage_meter_scale: None,
+        current_meter_scale: Some(250),
+    };
+}
+
+impl<'d> BlockingI2c for BaroParts<'d> {
+    type Config = hal::i2c::Config;
+    type Bus = hal::i2c::I2c<'d, hal::mode::Blocking, hal::i2c::Master>;
+
+    fn new_i2c_blocking(self, config: Self::Config) -> Self::Bus {
+        BaroParts::new_i2c_blocking(self, config)
+    }
+}
+
+impl ImuMetadata for SecondaryImu<'_> {
+    const ALIGNMENT: ImuAlignment = ImuAlignment::Cw0DegFlip;
+}
+
+impl SecondaryImu<'_> {
+    pub const ALIGNMENT: ImuAlignment = <Self as ImuMetadata>::ALIGNMENT;
 }

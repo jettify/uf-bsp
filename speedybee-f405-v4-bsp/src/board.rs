@@ -273,20 +273,30 @@ impl Board<'_> {
                 rx: pa3,
             },
             uarts: UartPortsParts {
-                uart1: usart1,
-                uart1_tx: pa9,
-                uart1_rx: pa10,
-                uart3: usart3,
-                uart3_tx: pc10,
-                uart3_rx: pc11,
-                uart4,
-                uart4_tx: pa0,
-                uart4_rx: pa1,
-                uart5,
-                uart5_rx: pd2,
-                uart6: usart6,
-                uart6_tx: pc6,
-                uart6_rx: pc7,
+                uart1: crate::core::capabilities::UartPort {
+                    uart: usart1,
+                    tx: pa9,
+                    rx: pa10,
+                },
+                uart3: crate::core::capabilities::UartPort {
+                    uart: usart3,
+                    tx: pc10,
+                    rx: pc11,
+                },
+                uart4: crate::core::capabilities::UartPort {
+                    uart: uart4,
+                    tx: pa0,
+                    rx: pa1,
+                },
+                uart5: crate::core::capabilities::RxOnlyUartPort {
+                    uart: uart5,
+                    rx: pd2,
+                },
+                uart6: crate::core::capabilities::UartPort {
+                    uart: usart6,
+                    tx: pc6,
+                    rx: pc7,
+                },
             },
             usb: UsbParts {
                 otg_fs: usb_otg_fs,
@@ -339,5 +349,19 @@ impl Board<'_> {
                 },
             },
         }
+    }
+}
+
+impl<'d> crate::core::capabilities::BoardCapabilities for Board<'d> {
+    const NAME: &'static str = "SPEEDYBEEF405V4";
+    type PrimaryImu = PrimaryImu<'d>;
+    type Storage = SdcardSpiParts<'d>;
+
+    fn primary_imu(&self) -> &Self::PrimaryImu {
+        &self.imu_primary
+    }
+
+    fn storage(&self) -> &Self::Storage {
+        &self.sdcard_spi
     }
 }
