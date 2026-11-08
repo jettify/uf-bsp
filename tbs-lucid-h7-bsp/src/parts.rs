@@ -1,4 +1,5 @@
 use crate::core::irq_latch::IrqLatch;
+use crate::core::irq_latch::IrqLatchClaimError;
 use crate::core::irq_latch::IrqLatchState;
 use crate::hal;
 use crate::hal::interrupt::InterruptExt as _;
@@ -65,6 +66,9 @@ impl<T> SecondaryImuDrdyIrqs for T where
 }
 
 /// Configure and enable the primary IMU data-ready (`EXTI2`) interrupt latch.
+///
+/// Returns an error if the latch state already has a consumer. On error, the configured
+/// input is dropped and this helper does not enable the NVIC interrupt.
 pub fn setup_primary_imu_drdy<'d, I>(
     int: hal::Peri<'d, pins::Imu1Int>,
     int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
@@ -72,21 +76,24 @@ pub fn setup_primary_imu_drdy<'d, I>(
     pull: hal::gpio::Pull,
     edge: hal::exti::TriggerEdge,
     priority: hal::interrupt::Priority,
-) -> ImuDrdyLatch<'d>
+) -> Result<ImuDrdyLatch<'d>, IrqLatchClaimError>
 where
     I: PrimaryImuDrdyIrqs,
 {
     hal::interrupt::typelevel::EXTI2::unpend();
     let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
-    let latch = IrqLatch::new_unchecked(input, &PRIMARY_IMU_DRDY_STATE);
+    let latch = IrqLatch::try_new(input, &PRIMARY_IMU_DRDY_STATE).map_err(|(_input, err)| err)?;
     hal::interrupt::EXTI2.set_priority(priority);
     // SAFETY: `I: PrimaryImuDrdyIrqs` proves `EXTI2` is bound to `PrimaryImuDrdyInterruptHandler`,
     // which clears the pending bit on line 2, and `input` has configured `EXTI2`.
     unsafe { hal::interrupt::typelevel::EXTI2::enable() };
-    latch
+    Ok(latch)
 }
 
 /// Configure and enable the secondary IMU data-ready (`EXTI15_10`) interrupt latch.
+///
+/// Returns an error if the latch state already has a consumer. On error, the configured
+/// input is dropped and this helper does not enable the NVIC interrupt.
 pub fn setup_secondary_imu_drdy<'d, I>(
     int: hal::Peri<'d, pins::Imu2Int>,
     int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
@@ -94,18 +101,18 @@ pub fn setup_secondary_imu_drdy<'d, I>(
     pull: hal::gpio::Pull,
     edge: hal::exti::TriggerEdge,
     priority: hal::interrupt::Priority,
-) -> ImuDrdyLatch<'d>
+) -> Result<ImuDrdyLatch<'d>, IrqLatchClaimError>
 where
     I: SecondaryImuDrdyIrqs,
 {
     hal::interrupt::typelevel::EXTI15_10::unpend();
     let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
-    let latch = IrqLatch::new_unchecked(input, &SECONDARY_IMU_DRDY_STATE);
+    let latch = IrqLatch::try_new(input, &SECONDARY_IMU_DRDY_STATE).map_err(|(_input, err)| err)?;
     hal::interrupt::EXTI15_10.set_priority(priority);
     // SAFETY: `I: SecondaryImuDrdyIrqs` proves `EXTI15_10` is bound to `SecondaryImuDrdyInterruptHandler`,
     // which clears the pending bit on line 15, and `input` has configured `EXTI15`.
     unsafe { hal::interrupt::typelevel::EXTI15_10::enable() };
-    latch
+    Ok(latch)
 }
 
 pub trait PrimaryImuIrqs:

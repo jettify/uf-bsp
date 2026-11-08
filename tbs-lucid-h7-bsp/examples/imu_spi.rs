@@ -60,14 +60,23 @@ async fn main(_spawner: embassy_executor::Spawner) {
         }
     };
 
-    let mut drdy = bsp::parts::setup_primary_imu_drdy(
+    let mut drdy = match bsp::parts::setup_primary_imu_drdy(
         imu.int,
         imu.int_exti,
         Irqs,
         Pull::None,
         exti::TriggerEdge::Rising,
         interrupt::Priority::P6,
-    );
+    ) {
+        Ok(drdy) => drdy,
+        Err(_) => {
+            info!("IMU data-ready latch already claimed");
+            loop {
+                led1.toggle();
+                embassy_time::Timer::after_millis(250).await;
+            }
+        }
+    };
     info!("imu initialized at {} Hz; waiting for drdy", IMU_ODR_HZ);
 
     let mut sample_count: u32 = 0;

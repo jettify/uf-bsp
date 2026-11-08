@@ -155,14 +155,20 @@ async fn main(spawner: embassy_executor::Spawner) {
         }
     };
 
-    let drdy = bsp::parts::setup_primary_imu_drdy(
+    let drdy = match bsp::parts::setup_primary_imu_drdy(
         imu.int,
         imu.int_exti,
         Irqs,
         Pull::None,
         exti::TriggerEdge::Rising,
         interrupt::Priority::P6,
-    );
+    ) {
+        Ok(drdy) => drdy,
+        Err(_) => {
+            log::error!("IMU data-ready latch already claimed");
+            blink_forever(led0, 250).await;
+        }
+    };
 
     run_imu_demo(icm, drdy, led0).await
 }
