@@ -22,6 +22,7 @@ stm32-metapac = { workspace = true }
 uf-bsp-core = { workspace = true }
 
 [dev-dependencies]
+heapless = "0.9.3"
 cortex-m = { version = "0.7.6", features = [
   "inline-asm",
   "critical-section-single-core",
