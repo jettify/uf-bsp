@@ -5,7 +5,7 @@
 /// Bind selected board peripherals in the application crate.
 ///
 /// Supported selections: `primary_imu`, `primary_imu_drdy`, `secondary_imu`, `secondary_imu_drdy`,
-/// `osd`, `receiver`, `usb_fs`.
+/// `osd`, `adc1`, `receiver`, `usb_fs`.
 /// Each selection ends with `;`. Only select groups whose default DMA or EXTI mapping
 /// you use. Invoke once per application (or use disjoint groups in separate invocations).
 /// For custom vectors, omit the corresponding group and use `hal::bind_interrupts!`
@@ -60,6 +60,12 @@ macro_rules! bind_board_interrupts {
             $($bindings)*
             DMA1_STREAM2 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA1_CH2>;
             DMA1_STREAM3 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA1_CH3>;
+        ] $($rest)*);
+    };
+    (@collect [$($decl:tt)*] [$($bindings:tt)*] adc1; $($rest:tt)*) => {
+        $crate::bind_board_interrupts!(@collect [$($decl)*] [
+            $($bindings)*
+            DMA2_STREAM1 => $crate::hal::dma::InterruptHandler<$crate::hal::peripherals::DMA2_CH1>;
         ] $($rest)*);
     };
     (@collect [$($decl:tt)*] [$($bindings:tt)*] receiver; $($rest:tt)*) => {

@@ -15,6 +15,13 @@ Originally developed for the `uflight` flight-controller project, but useful as 
 1. [`SpeedyBee F405 V4`](https://www.speedybee.com/speedybee-f405-v4-bls-60a-30x30-fc-esc-stack/) (Flashing is supported via DFU only.)
 1. Most Betaflight/INAV-compatible boards can be added in a similar way.
 
+## Hardware self-check
+
+Flash a driver-free diagnostic example over DFU with `just self-check lucid-h7` or
+`just self-check speedybee-f405-v4`. Results repeat over USB serial. See
+[the self-check guide](docs/self-check.md) for setup, reusable core/BSP test modules,
+and result interpretation.
+
 ## Simple Example
 
 ```rust
@@ -53,20 +60,64 @@ async fn main(_spawner: embassy_executor::Spawner) {
 ```
 
 
+## Interrupt bindings
+
+The application owns interrupt vectors. Depending on a BSP does not emit its
+peripheral interrupt handlers. Select the board peripherals you use:
+
+```rust
+bsp::bind_board_interrupts!(struct Irqs {
+    primary_imu;
+    usb_fs;
+    receiver;
+});
+
+let imu = board.imu_primary.new_spi(Irqs, spi_config);
+let usb = board.usb.into_usb_cdc_acm(Irqs, &usb_config, buffers, state);
+```
+
+Both boards support `primary_imu`, `osd`, `receiver`, and `usb_fs`.
+Lucid H7 also supports `secondary_imu`. Both boards support `adc1` for their
+default ADC DMA binding. These selections bind the BSP's default
+DMA streams and peripheral interrupts; IMU EXTI and executor interrupts are
+configured separately by the application.
+
+For custom mappings or handlers, omit the corresponding selection and use
+`bsp::hal::bind_interrupts!` directly. Constructors accept either macro's binding
+types through the same compile-time bounds. Additional vectors use a separate
+Embassy invocation with its own binding type, as shown below. Define each vector
+once; any handlers sharing a vector belong in the same entry. Generated binding
+structs are `Copy`, so they can be passed to multiple constructors.
+
+See each board's `examples/interrupt_bindings.rs` for a complete selection example,
+and the SpeedyBee `examples/imu_spi.rs` for standard Embassy bindings.
+
+## SpeedyBee IMU and ADC DMA
+
+`Board::new` provides SPI1 RX on `DMA2_CH2`, SPI1 TX on `DMA2_CH3`,
+and ADC1 on `DMA2_CH0`. Both IMU SPI and ADC DMA are available together.
+The `primary_imu` interrupt group binds `DMA2_STREAM2` and `DMA2_STREAM3`;
+applications using ADC DMA bind `DMA2_STREAM0` separately, as demonstrated
+in `speedybee-f405-v4-bsp/examples/resource_access.rs`.
+
+Migration: replace `Board::new_with_dma_layout` with `Board::new`, remove
+`DmaLayout` and optional IMU/ADC DMA handling, and use `new_spi`'s returned
+`PrimaryImuSpi` directly instead of matching on `NewSpiError`. Custom IMU
+bindings must move RX from `DMA2_STREAM0` / `DMA2_CH0` to
+`DMA2_STREAM2` / `DMA2_CH2`. The former `unassigned.dma2_ch2` token now
+belongs to `imu_primary.dma_rx`.
+
 ## IMU Read Example
 ```rust
 #![no_std]
 #![no_main]
 
-use bsp::hal::bind_interrupts;
-use bsp::hal::dma;
 use bsp::hal::exti;
 use bsp::hal::gpio::Level;
 use bsp::hal::gpio::Output;
 use bsp::hal::gpio::Pull;
 use bsp::hal::gpio::Speed;
 use bsp::hal::interrupt;
-use bsp::hal::peripherals;
 use bsp::hal::spi;
 use cortex_m as _;
 use defmt::info;
@@ -80,9 +131,11 @@ const IMU_ODR_HZ: u32 = 1_000;
 const LOG_HZ: u32 = 2;
 const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
 
-bind_interrupts!(struct Irqs {
-    DMA1_STREAM0 => dma::InterruptHandler<peripherals::DMA1_CH0>;
-    DMA1_STREAM1 => dma::InterruptHandler<peripherals::DMA1_CH1>;
+bsp::bind_board_interrupts!(struct Irqs {
+    primary_imu;
+});
+
+bsp::hal::bind_interrupts!(struct DrdyIrqs {
     EXTI2 => exti::InterruptHandler<interrupt::typelevel::EXTI2>;
 });
 
@@ -98,17 +151,9 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut spi_cfg = spi::Config::default();
     spi_cfg.frequency = bsp::hal::time::mhz(10);
 
-    let spi = spi::Spi::new(
-        board.imu_primary.spi,
-        board.imu_primary.sck,
-        board.imu_primary.mosi,
-        board.imu_primary.miso,
-        board.dma.spi1.tx,
-        board.dma.spi1.rx,
-        Irqs,
-        spi_cfg,
-    );
-    let cs = Output::new(board.imu_primary.cs, Level::High, Speed::Low);
+    let imu = board.imu_primary.new_spi(Irqs, spi_cfg);
+    let spi = imu.spi;
+    let cs = Output::new(imu.cs, Level::High, Speed::Low);
     let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
 
     let icm = icm426xx::ICM42688::new(spi_device);
@@ -121,10 +166,10 @@ async fn main(_spawner: embassy_executor::Spawner) {
     let mut icm = icm.initialize(Delay, imu_config).await.unwrap();
 
     let mut drdy = exti::ExtiInput::new(
-        board.imu_primary.int,
-        board.imu_primary.int_exti,
+        imu.int,
+        imu.int_exti,
         Pull::None,
-        Irqs,
+        DrdyIrqs,
     );
     drdy.wait_for_low().await;
     info!("imu initialized at {} Hz; waiting for drdy", IMU_ODR_HZ);

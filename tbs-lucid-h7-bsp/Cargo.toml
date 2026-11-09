@@ -12,6 +12,10 @@ categories.workspace = true
 workspace = true
 
 [dependencies]
+embassy-time = { workspace = true, optional = true }
+embedded-hal-bus = { workspace = true, optional = true }
+icm426xx = { workspace = true, optional = true }
+uf-dps3xx = { workspace = true, optional = true }
 embassy-stm32 = { workspace = true, features = [
   "stm32h743zi",
   "time-driver-tim12",
@@ -20,6 +24,10 @@ embassy-stm32 = { workspace = true, features = [
 embassy-usb = { workspace = true }
 stm32-metapac = { workspace = true }
 uf-bsp-core = { workspace = true }
+
+[features]
+self-test = ["uf-bsp-core/self-test", "dep:embassy-time", "dep:embedded-hal-bus"]
+sensor-examples = ["dep:icm426xx", "dep:uf-dps3xx"]
 
 [dev-dependencies]
 heapless = "0.9.3"
@@ -33,9 +41,19 @@ embassy-futures = { workspace = true }
 embassy-time = { workspace = true }
 embedded-hal-async = { workspace = true }
 embedded-hal-bus = { workspace = true }
-icm426xx = { workspace = true }
-uf-dps3xx = { workspace = true }
 panic-halt = { workspace = true }
 defmt = { workspace = true }
 defmt-rtt = { workspace = true }
 panic-probe = { workspace = true }
+
+[[example]]
+name = "self_check"
+required-features = ["self-test"]
+
+[[example]]
+name = "imu_spi"
+required-features = ["sensor-examples"]
+
+[[example]]
+name = "baro_i2c"
+required-features = ["sensor-examples"]
