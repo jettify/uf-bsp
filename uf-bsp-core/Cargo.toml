@@ -1,6 +1,8 @@
 [package]
 name = "uf-bsp-core"
+description = "Shared hardware metadata, interrupt latches, USB helpers, and diagnostics for uf-bsp board support crates"
 version.workspace = true
+rust-version.workspace = true
 edition.workspace = true
 license-file.workspace = true
 authors.workspace = true

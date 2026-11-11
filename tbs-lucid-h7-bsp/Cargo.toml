@@ -1,6 +1,8 @@
 [package]
 name = "tbs-lucid-h7-bsp"
+description = "Embassy-based board support for the TBS Lucid H7 flight controller"
 version.workspace = true
+rust-version.workspace = true
 edition.workspace = true
 license-file.workspace = true
 authors.workspace = true

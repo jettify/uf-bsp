@@ -31,5 +31,5 @@ flash-baro:
 flash-imu:
   just flash imu_spi
 
-screen:
-  screen /dev/tty.usbmodem14101 115200
+screen port="":
+  just --justfile ../justfile screen {{quote(port)}}

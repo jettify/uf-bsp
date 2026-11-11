@@ -1,6 +1,8 @@
 [package]
 name = "speedybee-f405-v4-bsp"
+description = "Embassy-based board support for the SpeedyBee F405 V4 flight controller"
 version.workspace = true
+rust-version.workspace = true
 edition.workspace = true
 license-file.workspace = true
 authors.workspace = true
@@ -22,9 +24,6 @@ embassy-stm32 = { workspace = true, features = [
   "exti",
 ] }
 embassy-usb = { workspace = true }
-embassy-usb-logger = "0.6.0"
-log = "0.4"
-static_cell = "2.1.1"
 stm32-metapac = { workspace = true }
 uf-bsp-core = { workspace = true }
 
@@ -33,6 +32,9 @@ self-test = ["uf-bsp-core/self-test", "dep:embassy-time", "dep:embedded-hal-bus"
 sensor-examples = ["dep:icm426xx", "dep:uf-dps3xx"]
 
 [dev-dependencies]
+embassy-usb-logger = "0.6.0"
+log = "0.4"
+static_cell = "2.1.1"
 cortex-m = { version = "0.7.6", features = [
   "inline-asm",
   "critical-section-single-core",
