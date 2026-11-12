@@ -1,4 +1,5 @@
 #![no_std]
+#![doc = include_str!("../README.md")]
 
 pub use embassy_stm32 as hal;
 pub use stm32_metapac as pac;

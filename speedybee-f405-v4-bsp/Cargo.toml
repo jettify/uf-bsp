@@ -58,3 +58,8 @@ required-features = ["sensor-examples"]
 [[example]]
 name = "baro_i2c"
 required-features = ["sensor-examples"]
+
+[package.metadata.docs.rs]
+default-target = "thumbv7em-none-eabihf"
+targets = ["thumbv7em-none-eabihf"]
+all-features = true

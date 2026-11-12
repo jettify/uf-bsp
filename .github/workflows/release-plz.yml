@@ -20,14 +20,14 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.92.0
         with:
           targets: thumbv7em-none-eabihf
           components: clippy
       - name: Install Just
         uses: taiki-e/install-action@just
       - name: Verify release
-        run: just ci
+        run: just ci release-checks
       - name: Install release tools for the runner
         uses: taiki-e/install-action@v2
         with:
@@ -60,7 +60,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.RELEASE_PLZ_TOKEN }}
       - name: Install Rust toolchain
-        uses: dtolnay/rust-toolchain@stable
+        uses: dtolnay/rust-toolchain@1.92.0
         with:
           targets: thumbv7em-none-eabihf
       - name: Install release tools for the runner

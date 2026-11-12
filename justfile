@@ -108,3 +108,16 @@ self-check-build:
     cargo build --release -p "$board" --target thumbv7em-none-eabihf --example self_check --features self-test
     cargo clippy --release -p "$board" --target thumbv7em-none-eabihf --features self-test --example self_check -- -D warnings
   done
+
+# Embedded API documentation, matching docs.rs features; warnings fail the build.
+doc-check:
+  RUSTDOCFLAGS="-D warnings" cargo doc -p uf-bsp-core --target thumbv7em-none-eabihf --all-features --no-deps --locked
+  RUSTDOCFLAGS="-D warnings" cargo doc -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --all-features --no-deps --locked
+  RUSTDOCFLAGS="-D warnings" cargo doc -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --all-features --no-deps --locked
+
+# Verify workspace archives together before core is published.
+package-check:
+  cargo package --workspace --all-features --target thumbv7em-none-eabihf --target-dir "${CARGO_TARGET_DIR:-target}/release-checks" --allow-dirty
+
+# Run after just ci; hardware validation is deliberately separate.
+release-checks: doc-check package-check

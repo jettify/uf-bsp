@@ -26,3 +26,8 @@ embassy-usb = { workspace = true }
 [dev-dependencies]
 critical-section = { version = "1.2.0", features = ["std"] }
 embassy-time = { workspace = true, features = ["mock-driver", "generic-queue-8"] }
+
+[package.metadata.docs.rs]
+default-target = "thumbv7em-none-eabihf"
+targets = ["thumbv7em-none-eabihf"]
+all-features = true
