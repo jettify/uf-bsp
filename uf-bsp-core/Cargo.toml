@@ -1,6 +1,6 @@
 [package]
 name = "uf-bsp-core"
-description = "Shared hardware metadata, interrupt latches, USB helpers, and diagnostics for uf-bsp board support crates"
+description = "Shared hardware metadata, USB helpers, and diagnostics for uf-bsp board support crates"
 version.workspace = true
 rust-version.workspace = true
 edition.workspace = true
@@ -21,7 +21,6 @@ embedded-hal-async = { workspace = true, optional = true }
 embassy-time = { workspace = true, optional = true }
 embassy-futures = { workspace = true, optional = true }
 heapless = { version = "0.9.3", optional = true }
-embassy-sync = { workspace = true }
 embassy-usb = { workspace = true }
 
 [dev-dependencies]

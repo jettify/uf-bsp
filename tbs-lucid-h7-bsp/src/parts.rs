@@ -6,31 +6,22 @@ use crate::core::capabilities::PinPolarity;
 use crate::core::capabilities::StorageBus;
 use crate::core::capabilities::StorageCapability;
 use crate::core::capabilities::UartPort;
-use crate::core::irq_latch::IrqLatch;
-use crate::core::irq_latch::IrqLatchClaimError;
-use crate::core::irq_latch::IrqLatchState;
 use crate::hal;
 use crate::hal::interrupt::InterruptExt as _;
-use crate::hal::interrupt::typelevel::Interrupt as _;
-use crate::pac;
 use crate::pins;
 
-static PRIMARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
-static SECONDARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
+/// Standard Embassy async EXTI input for an IMU data-ready line.
+///
+/// Waits are armed when polled, and cancellation masks only the owned line.
+/// Events between waits are not counted; obtain sample counts from the IMU FIFO.
+pub type ImuDrdyInput<'d> = hal::exti::ExtiInput<'d, hal::mode::Async>;
 
-pub type ImuDrdyLatch<'d> = IrqLatch<hal::exti::ExtiInput<'d, hal::mode::Blocking>>;
-
-/// Interrupt handler for the primary IMU data-ready line (`PC2` / `EXTI2`).
-pub struct PrimaryImuDrdyInterruptHandler;
-
-impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI2>
-    for PrimaryImuDrdyInterruptHandler
-{
-    unsafe fn on_interrupt() {
-        pac::EXTI.pr(0).write(|w| w.set_line(2, true));
-        PRIMARY_IMU_DRDY_STATE.on_irq();
-    }
-}
+/// Embassy handler for the primary IMU data-ready line (`PB2` / `EXTI2`).
+///
+/// Bind the vector once, including when other inputs share it. The same binding
+/// also supports standard Embassy EXTI inputs on the other lines of that vector.
+pub type PrimaryImuDrdyInterruptHandler =
+    hal::exti::InterruptHandler<hal::interrupt::typelevel::EXTI2>;
 
 pub trait PrimaryImuDrdyIrqs:
     hal::interrupt::typelevel::Binding<hal::interrupt::typelevel::EXTI2, PrimaryImuDrdyInterruptHandler>
@@ -45,17 +36,34 @@ impl<T> PrimaryImuDrdyIrqs for T where
 {
 }
 
-/// Interrupt handler for the secondary IMU data-ready line (`PE15` / `EXTI15_10`).
-pub struct SecondaryImuDrdyInterruptHandler;
-
-impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI15_10>
-    for SecondaryImuDrdyInterruptHandler
+/// Construct the primary IMU async data-ready input (`PB2` / `EXTI2`).
+///
+/// Call after `hal::init`, which enables EXTI vectors. Choose the wait with
+/// `wait_for_high`, `wait_for_low`, `wait_for_rising_edge`,
+/// `wait_for_falling_edge`, or `wait_for_any_edge`.
+/// No interrupt is armed until a wait is polled. Dropping a pending wait masks
+/// this input's line; other inputs on a shared vector remain available.
+/// The priority applies to the entire `EXTI2` vector.
+pub fn setup_primary_imu_drdy<'d, I>(
+    int: hal::Peri<'d, pins::Imu1Int>,
+    int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
+    irqs: I,
+    pull: hal::gpio::Pull,
+    priority: hal::interrupt::Priority,
+) -> ImuDrdyInput<'d>
+where
+    I: PrimaryImuDrdyIrqs,
 {
-    unsafe fn on_interrupt() {
-        pac::EXTI.pr(0).write(|w| w.set_line(15, true));
-        SECONDARY_IMU_DRDY_STATE.on_irq();
-    }
+    hal::interrupt::EXTI2.set_priority(priority);
+    hal::exti::ExtiInput::new(int, int_exti, pull, irqs)
 }
+
+/// Embassy handler for the secondary IMU data-ready line (`PE15` / `EXTI15_10`).
+///
+/// Bind the vector once, including when other inputs share it. The same binding
+/// also supports standard Embassy EXTI inputs on the other lines of that vector.
+pub type SecondaryImuDrdyInterruptHandler =
+    hal::exti::InterruptHandler<hal::interrupt::typelevel::EXTI15_10>;
 
 pub trait SecondaryImuDrdyIrqs:
     hal::interrupt::typelevel::Binding<
@@ -73,54 +81,26 @@ impl<T> SecondaryImuDrdyIrqs for T where
 {
 }
 
-/// Configure and enable the primary IMU data-ready (`EXTI2`) interrupt latch.
+/// Construct the secondary IMU async data-ready input (`PE15` / `EXTI15_10`).
 ///
-/// Returns an error if the latch state already has a consumer. On error, the configured
-/// input is dropped and this helper does not enable the NVIC interrupt.
-pub fn setup_primary_imu_drdy<'d, I>(
-    int: hal::Peri<'d, pins::Imu1Int>,
-    int_exti: hal::Peri<'d, hal::peripherals::EXTI2>,
-    _irqs: I,
-    pull: hal::gpio::Pull,
-    edge: hal::exti::TriggerEdge,
-    priority: hal::interrupt::Priority,
-) -> Result<ImuDrdyLatch<'d>, IrqLatchClaimError>
-where
-    I: PrimaryImuDrdyIrqs,
-{
-    hal::interrupt::typelevel::EXTI2::unpend();
-    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
-    let latch = IrqLatch::try_new(input, &PRIMARY_IMU_DRDY_STATE).map_err(|(_input, err)| err)?;
-    hal::interrupt::EXTI2.set_priority(priority);
-    // SAFETY: `I: PrimaryImuDrdyIrqs` proves `EXTI2` is bound to `PrimaryImuDrdyInterruptHandler`,
-    // which clears the pending bit on line 2, and `input` has configured `EXTI2`.
-    unsafe { hal::interrupt::typelevel::EXTI2::enable() };
-    Ok(latch)
-}
-
-/// Configure and enable the secondary IMU data-ready (`EXTI15_10`) interrupt latch.
-///
-/// Returns an error if the latch state already has a consumer. On error, the configured
-/// input is dropped and this helper does not enable the NVIC interrupt.
+/// Call after `hal::init`, which enables EXTI vectors. Choose the wait with
+/// `wait_for_high`, `wait_for_low`, `wait_for_rising_edge`,
+/// `wait_for_falling_edge`, or `wait_for_any_edge`.
+/// No interrupt is armed until a wait is polled. Dropping a pending wait masks
+/// this input's line; other inputs on a shared vector remain available.
+/// The priority applies to the entire `EXTI15_10` vector.
 pub fn setup_secondary_imu_drdy<'d, I>(
     int: hal::Peri<'d, pins::Imu2Int>,
     int_exti: hal::Peri<'d, hal::peripherals::EXTI15>,
-    _irqs: I,
+    irqs: I,
     pull: hal::gpio::Pull,
-    edge: hal::exti::TriggerEdge,
     priority: hal::interrupt::Priority,
-) -> Result<ImuDrdyLatch<'d>, IrqLatchClaimError>
+) -> ImuDrdyInput<'d>
 where
     I: SecondaryImuDrdyIrqs,
 {
-    hal::interrupt::typelevel::EXTI15_10::unpend();
-    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
-    let latch = IrqLatch::try_new(input, &SECONDARY_IMU_DRDY_STATE).map_err(|(_input, err)| err)?;
     hal::interrupt::EXTI15_10.set_priority(priority);
-    // SAFETY: `I: SecondaryImuDrdyIrqs` proves `EXTI15_10` is bound to `SecondaryImuDrdyInterruptHandler`,
-    // which clears the pending bit on line 15, and `input` has configured `EXTI15`.
-    unsafe { hal::interrupt::typelevel::EXTI15_10::enable() };
-    Ok(latch)
+    hal::exti::ExtiInput::new(int, int_exti, pull, irqs)
 }
 
 pub trait PrimaryImuIrqs:

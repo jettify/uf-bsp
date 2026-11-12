@@ -7,30 +7,22 @@ use crate::core::capabilities::RxOnlyUartPort;
 use crate::core::capabilities::StorageBus;
 use crate::core::capabilities::StorageCapability;
 use crate::core::capabilities::UartPort;
-use crate::core::irq_latch::IrqLatch;
-use crate::core::irq_latch::IrqLatchClaimError;
-use crate::core::irq_latch::IrqLatchState;
 use crate::hal;
 use crate::hal::interrupt::InterruptExt as _;
-use crate::hal::interrupt::typelevel::Interrupt as _;
-use crate::pac;
 use crate::pins;
 
-static PRIMARY_IMU_DRDY_STATE: IrqLatchState = IrqLatchState::new();
+/// Standard Embassy async EXTI input for an IMU data-ready line.
+///
+/// Waits are armed when polled, and cancellation masks only the owned line.
+/// Events between waits are not counted; obtain sample counts from the IMU FIFO.
+pub type ImuDrdyInput<'d> = hal::exti::ExtiInput<'d, hal::mode::Async>;
 
-pub type ImuDrdyLatch<'d> = IrqLatch<hal::exti::ExtiInput<'d, hal::mode::Blocking>>;
-
-/// Interrupt handler for the primary IMU data-ready line (`PA4` / `EXTI4`).
-pub struct PrimaryImuDrdyInterruptHandler;
-
-impl hal::interrupt::typelevel::Handler<hal::interrupt::typelevel::EXTI4>
-    for PrimaryImuDrdyInterruptHandler
-{
-    unsafe fn on_interrupt() {
-        pac::EXTI.pr(0).write(|w| w.set_line(4, true));
-        PRIMARY_IMU_DRDY_STATE.on_irq();
-    }
-}
+/// Embassy handler for the primary IMU data-ready line (`PC4` / `EXTI4`).
+///
+/// Bind the vector once, including when other inputs share it. The same binding
+/// also supports standard Embassy EXTI inputs on the other lines of that vector.
+pub type PrimaryImuDrdyInterruptHandler =
+    hal::exti::InterruptHandler<hal::interrupt::typelevel::EXTI4>;
 
 pub trait PrimaryImuDrdyIrqs:
     hal::interrupt::typelevel::Binding<hal::interrupt::typelevel::EXTI4, PrimaryImuDrdyInterruptHandler>
@@ -45,29 +37,26 @@ impl<T> PrimaryImuDrdyIrqs for T where
 {
 }
 
-/// Configure and enable the primary IMU data-ready (`EXTI4`) interrupt latch.
+/// Construct the primary IMU async data-ready input (`PC4` / `EXTI4`).
 ///
-/// Returns an error if the latch state already has a consumer. On error, the configured
-/// input is dropped and this helper does not enable the NVIC interrupt.
+/// Call after `hal::init`, which enables EXTI vectors. Choose the wait with
+/// `wait_for_high`, `wait_for_low`, `wait_for_rising_edge`,
+/// `wait_for_falling_edge`, or `wait_for_any_edge`.
+/// No interrupt is armed until a wait is polled. Dropping a pending wait masks
+/// this input's line; other inputs on a shared vector remain available.
+/// The priority applies to the entire `EXTI4` vector.
 pub fn setup_primary_imu_drdy<'d, I>(
     int: hal::Peri<'d, pins::Imu1Int>,
     int_exti: hal::Peri<'d, hal::peripherals::EXTI4>,
-    _irqs: I,
+    irqs: I,
     pull: hal::gpio::Pull,
-    edge: hal::exti::TriggerEdge,
     priority: hal::interrupt::Priority,
-) -> Result<ImuDrdyLatch<'d>, IrqLatchClaimError>
+) -> ImuDrdyInput<'d>
 where
     I: PrimaryImuDrdyIrqs,
 {
-    hal::interrupt::typelevel::EXTI4::unpend();
-    let input = hal::exti::ExtiInput::new_blocking(int, int_exti, pull, edge);
-    let latch = IrqLatch::try_new(input, &PRIMARY_IMU_DRDY_STATE).map_err(|(_input, err)| err)?;
     hal::interrupt::EXTI4.set_priority(priority);
-    // SAFETY: `I: PrimaryImuDrdyIrqs` proves `EXTI4` is bound to `PrimaryImuDrdyInterruptHandler`,
-    // which clears the pending bit on line 4, and `input` has configured `EXTI4`.
-    unsafe { hal::interrupt::typelevel::EXTI4::enable() };
-    Ok(latch)
+    hal::exti::ExtiInput::new(int, int_exti, pull, irqs)
 }
 
 pub trait PrimaryImuIrqs:

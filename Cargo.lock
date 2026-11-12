@@ -1339,7 +1339,6 @@ version = "0.1.0"
 dependencies = [
  "critical-section",
  "embassy-futures",
- "embassy-sync",
  "embassy-time",
  "embassy-usb",
  "embedded-hal 1.0.0",
