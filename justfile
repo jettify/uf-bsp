@@ -51,8 +51,21 @@ build-examples:
 # Run same testing commands as on CI server
 ci: test self-check-test build lint check-examples build-examples self-check-build
 
-screen:
- screen /dev/tty.usbmodem14101 115200
+# Open the USB serial console
+screen port="":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  port={{quote(port)}}
+  if [[ -z "$port" ]]; then
+    shopt -s nullglob
+    set -- /dev/cu.usbmodem* /dev/ttyACM*
+    case $# in
+      0) echo "No USB serial port found. Connect the board in firmware mode." >&2; exit 1 ;;
+      1) port="$1" ;;
+      *) printf '%s\n' 'Multiple USB serial ports found. Run just screen <port> with one of:' "$@" >&2; exit 1 ;;
+    esac
+  fi
+  exec screen "$port" 115200
 
 # Build and flash self_check over DFU; board: lucid-h7 or speedybee-f405-v4
 self-check board:
@@ -72,11 +85,11 @@ self-check board:
     --example self_check --features self-test
   rust-objcopy -O binary "$elf" "$bin"
 
-  serial_args=()
+  set --
   if [[ -n "${DFU_SERIAL:-}" ]]; then
-    serial_args=(--serial "$DFU_SERIAL")
+    set -- --serial "$DFU_SERIAL"
   fi
-  dfu-util --device 0483:df11 "${serial_args[@]}" --alt 0 \
+  dfu-util --device 0483:df11 "$@" --alt 0 \
     --dfuse-address 0x08000000:leave --download "$bin"
 
 # Host tests for self-test module.
