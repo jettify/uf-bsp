@@ -28,10 +28,16 @@ jobs:
         uses: taiki-e/install-action@just
       - name: Verify release
         run: just ci
-      - name: Run release-plz
-        uses: release-plz/action@v0.5
+      - name: Install release tools for the runner
+        uses: taiki-e/install-action@v2
         with:
-          command: release
+          tool: release-plz@0.4.3,cargo-semver-checks@0.51
+      - name: Configure release commit identity
+        uses: release-plz/git-config@59144859caf016f8b817a2ac9b051578729173c4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
+      - name: Run release-plz
+        run: release-plz release --git-token "$GITHUB_TOKEN" --forge github
         env:
           CARGO_BUILD_TARGET: thumbv7em-none-eabihf
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
@@ -57,10 +63,18 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: thumbv7em-none-eabihf
-      - name: Run release-plz
-        uses: release-plz/action@v0.5
+      - name: Install release tools for the runner
+        uses: taiki-e/install-action@v2
         with:
-          command: release-pr
+          tool: release-plz@0.4.3,cargo-semver-checks@0.51
+      - name: Configure release commit identity
+        uses: release-plz/git-config@59144859caf016f8b817a2ac9b051578729173c4
+        env:
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
+      - name: Run release-plz
+        run: >-
+          release-plz release-pr --git-token "$GITHUB_TOKEN" --forge github
+          --repo-url "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY"
         env:
           CARGO_BUILD_TARGET: thumbv7em-none-eabihf
           GITHUB_TOKEN: ${{ secrets.RELEASE_PLZ_TOKEN }}
