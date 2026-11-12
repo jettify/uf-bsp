@@ -78,9 +78,16 @@ let usb = board.usb.into_usb_cdc_acm(Irqs, &usb_config, buffers, state);
 
 Both boards support `primary_imu`, `osd`, `receiver`, and `usb_fs`.
 Lucid H7 also supports `secondary_imu`. Both boards support `adc1` for their
-default ADC DMA binding. These selections bind the BSP's default
-DMA streams and peripheral interrupts; IMU EXTI and executor interrupts are
-configured separately by the application.
+default ADC DMA binding. Select `primary_imu_drdy` for the primary IMU's standard
+Embassy EXTI binding, or `secondary_imu_drdy` for Lucid's secondary IMU.
+Executor interrupts are configured separately by the application.
+
+DRDY helpers return standard async EXTI inputs. Match the wait to the sensor
+configuration: use `drdy.wait_for_high().await` for active-high latched interrupts
+or `drdy.wait_for_rising_edge().await` for pulses. These inputs support other
+Embassy EXTI inputs, including lines sharing the secondary IMU's vector. Events
+between waits are not counted; drain the sensor FIFO to obtain all samples.
+See [EXTI handling and migration](docs/exti.md) for the API change and regression checks.
 
 For custom mappings or handlers, omit the corresponding selection and use
 `bsp::hal::bind_interrupts!` directly. Constructors accept either macro's binding
@@ -90,7 +97,7 @@ once; any handlers sharing a vector belong in the same entry. Generated binding
 structs are `Copy`, so they can be passed to multiple constructors.
 
 See each board's `examples/interrupt_bindings.rs` for a complete selection example,
-and the SpeedyBee `examples/imu_spi.rs` for standard Embassy bindings.
+and each board's `examples/imu_spi.rs` for latched FIFO acquisition.
 
 ## SpeedyBee IMU and ADC DMA
 
@@ -108,117 +115,17 @@ bindings must move RX from `DMA2_STREAM0` / `DMA2_CH0` to
 belongs to `imu_primary.dma_rx`.
 
 ## IMU Read Example
-```rust
-#![no_std]
-#![no_main]
 
-use bsp::hal::exti;
-use bsp::hal::gpio::Level;
-use bsp::hal::gpio::Output;
-use bsp::hal::gpio::Pull;
-use bsp::hal::gpio::Speed;
-use bsp::hal::interrupt;
-use bsp::hal::spi;
-use cortex_m as _;
-use defmt::info;
-use defmt_rtt as _;
-use embassy_time::Delay;
-use embedded_hal_bus::spi::ExclusiveDevice;
-use panic_probe as _;
-use tbs_lucid_h7_bsp as bsp;
+Both boards provide an `imu_spi` example using the ICM-42688 FIFO at 1 kHz:
 
-const IMU_ODR_HZ: u32 = 1_000;
-const LOG_HZ: u32 = 2;
-const LOG_EVERY_N_SAMPLES: u32 = IMU_ODR_HZ / LOG_HZ;
+- [Lucid H7](tbs-lucid-h7-bsp/examples/imu_spi.rs): RTT logging.
+- [SpeedyBee F405 V4](speedybee-f405-v4-bsp/examples/imu_spi.rs): USB logging.
 
-bsp::bind_board_interrupts!(struct Irqs {
-    primary_imu;
-});
-
-bsp::hal::bind_interrupts!(struct DrdyIrqs {
-    EXTI2 => exti::InterruptHandler<interrupt::typelevel::EXTI2>;
-});
-
-#[embassy_executor::main]
-async fn main(_spawner: embassy_executor::Spawner) {
-    info!("starting imu_spi example");
-    let p = bsp::hal::init(bsp::config());
-    let board = bsp::Board::new(p);
-
-    let mut led0 = Output::new(board.leds.led0, Level::Low, Speed::Low);
-    let mut led1 = Output::new(board.leds.led1, Level::High, Speed::Low);
-
-    let mut spi_cfg = spi::Config::default();
-    spi_cfg.frequency = bsp::hal::time::mhz(10);
-
-    let imu = board.imu_primary.new_spi(Irqs, spi_cfg);
-    let spi = imu.spi;
-    let cs = Output::new(imu.cs, Level::High, Speed::Low);
-    let spi_device = ExclusiveDevice::new_no_delay(spi, cs).unwrap();
-
-    let icm = icm426xx::ICM42688::new(spi_device);
-    let imu_config = icm426xx::Config {
-        int1_mode: icm426xx::InterruptMode::Pulsed,
-        int1_polarity: icm426xx::InterruptPolarity::ActiveHigh,
-        rate: icm426xx::OutputDataRate::Hz1000,
-        timestamps_are_absolute: false,
-    };
-    let mut icm = icm.initialize(Delay, imu_config).await.unwrap();
-
-    let mut drdy = exti::ExtiInput::new(
-        imu.int,
-        imu.int_exti,
-        Pull::None,
-        DrdyIrqs,
-    );
-    drdy.wait_for_low().await;
-    info!("imu initialized at {} Hz; waiting for drdy", IMU_ODR_HZ);
-
-    let mut sample_count: u32 = 0;
-    loop {
-        drdy.wait_for_rising_edge().await;
-
-        loop {
-            match icm.read_sample().await {
-                Ok(Some((sample, has_more))) => {
-                    sample_count = sample_count.wrapping_add(1);
-                    if sample_count.is_multiple_of(LOG_EVERY_N_SAMPLES) {
-                        if let Some((gx, gy, gz)) = sample.gyro {
-                            info!("gyro rad/s: x={} y={} z={}", gx, gy, gz);
-                        }
-                        if let Some((ax, ay, az)) = sample.accel {
-                            info!("accel m/s^2: x={} y={} z={}", ax, ay, az);
-                        }
-                        led0.toggle();
-                    }
-
-                    if !has_more {
-                        break;
-                    }
-                }
-                Ok(None) => break,
-                Err(icm426xx::Error::FifoOverflow) => {
-                    info!("imu fifo overflow; resetting fifo");
-                    let _ = icm.reset_fifo().await;
-                    led1.toggle();
-                    break;
-                }
-                Err(icm426xx::Error::Bus(_)) => {
-                    info!("imu bus error");
-                    led1.toggle();
-                    break;
-                }
-                Err(icm426xx::Error::WhoAmIMismatch(whoami)) => {
-                    info!("unexpected whoami mismatch: {}", whoami);
-                    led1.toggle();
-                    break;
-                }
-            }
-        }
-    }
-}
-
-```
+The examples configure a latched, active-high FIFO watermark interrupt and wait
+with `wait_for_high()`. They drain queued packets, recheck occupancy before
+sleeping, and yield after each bounded pass. A timeout provides a fallback FIFO
+check if no interrupt arrives. See [FIFO acquisition](docs/exti.md#fifo-acquisition)
+for recovery behavior and hardware validation.
 
 ## License
 

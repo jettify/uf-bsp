@@ -11,6 +11,8 @@
 /// For custom vectors, omit the corresponding group and use `hal::bind_interrupts!`
 /// in a separate invocation with its own binding type.
 /// Each vector must have exactly one definition, including any shared handlers.
+/// DRDY groups use standard Embassy EXTI handlers. For another input on
+/// `EXTI15_10`, reuse the `secondary_imu_drdy` binding instead of defining it again.
 /// Executor interrupts remain application-owned and are not selected here.
 ///
 /// ```ignore
