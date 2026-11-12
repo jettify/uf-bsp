@@ -18,8 +18,18 @@ jobs:
         uses: actions-rust-lang/setup-rust-toolchain@v1
         with:
           target: thumbv7em-none-eabihf
-          components: rustfmt, clippy
+          components: rustfmt, clippy, llvm-tools-preview
       - name: Install Just
         uses: taiki-e/install-action@just
+      - name: Install cargo-llvm-cov
+        uses: taiki-e/install-action@cargo-llvm-cov
       - name: CI
         run: just ci
+      - name: Generate code coverage
+        run: just cov
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: lcov.info
+          fail_ci_if_error: true

@@ -31,6 +31,10 @@ lint:
 test:
   cargo test -p uf-bsp-core
 
+# Generate host-side core coverage for Codecov (board crates require hardware).
+cov:
+  cargo llvm-cov -p uf-bsp-core --all-features --lcov --output-path lcov.info
+
 # Check board examples
 check-examples:
   cargo check --release -p tbs-lucid-h7-bsp --target thumbv7em-none-eabihf --all-features --examples
