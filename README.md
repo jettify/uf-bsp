@@ -12,6 +12,10 @@ Requires Rust 1.92 or newer.
 | [speedybee-f405-v4-bsp](https://crates.io/crates/speedybee-f405-v4-bsp) | [SpeedyBee F405 V4](speedybee-f405-v4-bsp/README.md), STM32F405 | [docs.rs](https://docs.rs/speedybee-f405-v4-bsp) |
 | [uf-bsp-core](https://crates.io/crates/uf-bsp-core) | Shared metadata, USB helpers, and diagnostics | [docs.rs](https://docs.rs/uf-bsp-core) |
 
+| TBS Lucid H7 | SpeedyBee F405 V4 |
+| :---: | :---: |
+| ![TBS Lucid H7 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/tbs-lucid-h7.jpg) | ![SpeedyBee F405 V4 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/speedybee-f405-v4.jpg) |
+
 ## Features
 
 - Board pin mappings, clock presets, and DMA resources.
