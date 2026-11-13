@@ -11,7 +11,6 @@ Shared `no_std` utilities for uf-bsp board support crates. Requires Rust 1.92+.
 
 - Board capability metadata and peripheral resource types.
 - USB CDC configuration helpers.
-- Optional `self-test`: peripheral checks, chip identity probes, reports, and USB report transport.
 
 ```toml
 [dependencies]

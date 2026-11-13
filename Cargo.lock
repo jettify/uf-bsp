@@ -489,7 +489,6 @@ dependencies = [
  "critical-section",
  "document-features",
  "embassy-time-driver",
- "embassy-time-queue-utils",
  "embedded-hal 0.2.7",
  "embedded-hal 1.0.0",
  "embedded-hal-async",
@@ -1110,6 +1109,7 @@ dependencies = [
  "embassy-usb-logger",
  "embedded-hal-async",
  "embedded-hal-bus",
+ "heapless 0.9.3",
  "icm426xx",
  "log",
  "panic-halt",
@@ -1337,13 +1337,7 @@ dependencies = [
 name = "uf-bsp-core"
 version = "0.1.0"
 dependencies = [
- "critical-section",
- "embassy-futures",
- "embassy-time",
  "embassy-usb",
- "embedded-hal 1.0.0",
- "embedded-hal-async",
- "heapless 0.9.3",
 ]
 
 [[package]]

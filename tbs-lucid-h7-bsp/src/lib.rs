@@ -18,6 +18,3 @@ pub use board::Board;
 pub use clocks::config;
 pub use clocks::config_with_usb;
 pub use unassigned::UnassignedPeripherals;
-
-#[cfg(feature = "self-test")]
-pub mod self_test;

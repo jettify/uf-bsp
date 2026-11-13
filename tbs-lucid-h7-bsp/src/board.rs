@@ -40,6 +40,8 @@ pub struct Board<'d> {
 }
 
 impl Board<'_> {
+    pub const NAME: &'static str = <Self as crate::core::capabilities::BoardCapabilities>::NAME;
+
     /// Partition every returned HAL token into board parts or `unassigned`.
     /// TIM12 is reserved internally by the Embassy time driver.
     #[deny(unused_variables)]

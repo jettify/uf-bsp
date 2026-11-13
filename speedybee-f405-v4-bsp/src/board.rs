@@ -34,6 +34,8 @@ pub struct Board<'d> {
 }
 
 impl Board<'_> {
+    pub const NAME: &'static str = <Self as crate::core::capabilities::BoardCapabilities>::NAME;
+
     /// Partition every returned HAL token into board parts or `unassigned`.
     /// ADC1 and SPI1 RX use independent DMA streams (DMA2_CH0 and DMA2_CH2).
     /// TIM9 is reserved internally by the Embassy time driver.

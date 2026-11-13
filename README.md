@@ -29,7 +29,7 @@ Both boards include:
 | `blinky` | LED output | — |
 | `imu_spi` | IMU FIFO sampling at 1 kHz | `sensor-examples` |
 | `baro_i2c` | Pressure and temperature readings | `sensor-examples` |
-| `self_check` | Peripheral identities, ADC, timer, LEDs, and USB reports | `self-test` |
+| `self_check` | Peripheral identities, ADC, status LEDs, and USB reports | — |
 
 Lucid also includes `usb_serial` and `clock_report`.
 

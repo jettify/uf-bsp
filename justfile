@@ -53,7 +53,7 @@ build-examples:
   cargo build --release -p speedybee-f405-v4-bsp --target thumbv7em-none-eabihf --all-features --examples
 
 # Run same testing commands as on CI server
-ci: test self-check-test build lint check-examples build-examples self-check-build
+ci: test build lint check-examples build-examples self-check-build
 
 # Open the USB serial console
 screen port="":
@@ -86,7 +86,7 @@ self-check board:
   bin="${target_dir}/${target}/release/examples/${crate}-self-check.bin"
 
   cargo build --release -p "$crate" --target "$target" --target-dir "$target_dir" \
-    --example self_check --features self-test
+    --example self_check
   rust-objcopy -O binary "$elf" "$bin"
 
   set --
@@ -96,17 +96,13 @@ self-check board:
   dfu-util --device 0483:df11 "$@" --alt 0 \
     --dfuse-address 0x08000000:leave --download "$bin"
 
-# Host tests for self-test module.
-self-check-test:
-  cargo test -p uf-bsp-core --features self-test
-
-# Verify the baseline separately, without enabling sensor driver features.
+# Verify self_check separately, without enabling sensor driver features.
 self-check-build:
   #!/usr/bin/env bash
   set -euo pipefail
   for board in tbs-lucid-h7-bsp speedybee-f405-v4-bsp; do
-    cargo build --release -p "$board" --target thumbv7em-none-eabihf --example self_check --features self-test
-    cargo clippy --release -p "$board" --target thumbv7em-none-eabihf --features self-test --example self_check -- -D warnings
+    cargo build --release -p "$board" --target thumbv7em-none-eabihf --example self_check
+    cargo clippy --release -p "$board" --target thumbv7em-none-eabihf --example self_check -- -D warnings
   done
 
 # Embedded API documentation, matching docs.rs features; warnings fail the build.

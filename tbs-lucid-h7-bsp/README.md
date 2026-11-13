@@ -15,7 +15,7 @@ Rust 1.92+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
 - USB CDC, USART6 receiver, additional UARTs, OSD SPI2, and SDMMC resources.
 - LEDs, motor output pins, board metadata, and unassigned peripherals.
 - Clock presets for 480 MHz CPU and USB; Embassy time driver on TIM12.
-- Optional `self-test` diagnostics and `sensor-examples` drivers.
+- Optional `sensor-examples` drivers.
 
 ```toml
 [dependencies]
@@ -29,7 +29,7 @@ tbs-lucid-h7-bsp = "0.1.0"
 | `blinky` | LED output | — |
 | `imu_spi` | IMU FIFO sampling at 1 kHz, RTT logging | `sensor-examples` |
 | `baro_i2c` | Pressure and temperature readings | `sensor-examples` |
-| `self_check` | Peripheral checks and USB reports | `self-test` |
+| `self_check` | Peripheral checks and USB reports | — |
 | `usb_serial` | USB CDC serial | — |
 | `clock_report` | Clock configuration report | — |
 

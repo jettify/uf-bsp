@@ -14,8 +14,6 @@ categories.workspace = true
 workspace = true
 
 [dependencies]
-embassy-time = { workspace = true, optional = true }
-embedded-hal-bus = { workspace = true, optional = true }
 icm426xx = { workspace = true, optional = true }
 uf-dps3xx = { workspace = true, optional = true }
 embassy-stm32 = { workspace = true, features = [
@@ -28,7 +26,6 @@ stm32-metapac = { workspace = true }
 uf-bsp-core = { workspace = true }
 
 [features]
-self-test = ["uf-bsp-core/self-test", "dep:embassy-time", "dep:embedded-hal-bus"]
 sensor-examples = ["dep:icm426xx", "dep:uf-dps3xx"]
 
 [dev-dependencies]
@@ -47,10 +44,6 @@ panic-halt = { workspace = true }
 defmt = { workspace = true }
 defmt-rtt = { workspace = true }
 panic-probe = { workspace = true }
-
-[[example]]
-name = "self_check"
-required-features = ["self-test"]
 
 [[example]]
 name = "imu_spi"
