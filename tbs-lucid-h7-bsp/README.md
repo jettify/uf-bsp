@@ -5,8 +5,10 @@
 [![docs.rs](https://docs.rs/tbs-lucid-h7-bsp/badge.svg)](https://docs.rs/tbs-lucid-h7-bsp)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/jettify/uf-bsp/blob/master/LICENSE)
 
-Embassy-based, `no_std` board support for the **TBS Lucid H7 (STM32H743)**.
+Embassy-based, `no_std` board support for the [**TBS Lucid H7 (STM32H743)**](https://www.team-blacksheep.com/products/prod:lucid_h7).
 Rust 1.92+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
+
+![TBS Lucid H7 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/tbs-lucid-h7.jpg)
 
 ## Features
 
@@ -23,6 +25,41 @@ tbs-lucid-h7-bsp = "0.1.0"
 ```
 
 ## Examples
+
+```rust
+#![no_std]
+#![no_main]
+
+use bsp::hal::gpio::Level;
+use bsp::hal::gpio::Output;
+use bsp::hal::gpio::Speed;
+use cortex_m as _;
+use defmt::info;
+use defmt_rtt as _;
+use embassy_time::Duration;
+use embassy_time::Timer;
+use panic_probe as _;
+use tbs_lucid_h7_bsp as bsp;
+
+#[embassy_executor::main]
+async fn main(_spawner: embassy_executor::Spawner) {
+    info!("starting blinky example");
+    let p = bsp::hal::init(bsp::config());
+    let board = bsp::Board::new(p);
+
+    let mut led0 = Output::new(board.leds.led0, Level::Low, Speed::Low);
+    let mut led1 = Output::new(board.leds.led1, Level::High, Speed::Low);
+    info!("leds initialized");
+
+    loop {
+        led0.toggle();
+        led1.toggle();
+        info!("leds toggled");
+        Timer::after(Duration::from_millis(250)).await;
+    }
+}
+
+```
 
 | Example | Purpose | Required feature |
 | --- | --- | --- |

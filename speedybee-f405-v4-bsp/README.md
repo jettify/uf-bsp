@@ -5,8 +5,10 @@
 [![docs.rs](https://docs.rs/speedybee-f405-v4-bsp/badge.svg)](https://docs.rs/speedybee-f405-v4-bsp)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/jettify/uf-bsp/blob/master/LICENSE)
 
-Embassy-based, `no_std` board support for the **SpeedyBee F405 V4 (STM32F405)**.
+Embassy-based, `no_std` board support for the **[SpeedyBee F405 V4 (STM32F405)](https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/)**.
 Rust 1.92+ · `thumbv7em-none-eabihf` · DFU flashing.
+
+![SpeedyBee F405 V4 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/speedybee-f405-v4.jpg)
 
 ## Features
 
@@ -23,6 +25,41 @@ speedybee-f405-v4-bsp = "0.1.0"
 ```
 
 ## Examples
+
+```rust
+#![no_std]
+#![no_main]
+
+#[path = "support/usb_logger.rs"]
+mod usb_logger;
+
+use bsp::hal::gpio::Level;
+use bsp::hal::gpio::Output;
+use bsp::hal::gpio::Speed;
+use embassy_time::Duration;
+use embassy_time::Timer;
+use panic_halt as _;
+use speedybee_f405_v4_bsp as bsp;
+
+#[embassy_executor::main]
+async fn main(spawner: embassy_executor::Spawner) {
+    let p = bsp::hal::init(bsp::config_with_usb());
+    let board = bsp::Board::new(p);
+    let mut led0 = Output::new(board.leds.led0, Level::Low, Speed::Low);
+    let log = usb_logger::spawn_default(&spawner, board.usb, "SpeedyBee F405 USB Logger");
+    log.wait_startup().await;
+    log::info!("logging online; starting blinky loop");
+
+    let mut tick: u32 = 0;
+
+    loop {
+        led0.toggle();
+        tick = tick.wrapping_add(1);
+        log::info!("blinky tick={}", tick);
+        Timer::after(Duration::from_millis(250)).await;
+    }
+}
+```
 
 | Example | Purpose | Required feature |
 | --- | --- | --- |
