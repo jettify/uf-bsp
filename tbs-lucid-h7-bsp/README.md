@@ -8,6 +8,8 @@
 Embassy-based, `no_std` board support for the [**TBS Lucid H7 (STM32H743)**](https://www.team-blacksheep.com/products/prod:lucid_h7).
 Rust 1.92+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
 
+**Experimental:** This crate is under active development. APIs and behavior may change at any time without notice.
+
 ![TBS Lucid H7 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/tbs-lucid-h7.jpg)
 
 ## Features

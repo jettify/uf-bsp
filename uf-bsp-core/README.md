@@ -7,6 +7,8 @@
 
 Shared `no_std` utilities for uf-bsp board support crates. Requires Rust 1.92+.
 
+**Experimental:** This crate is under active development. APIs and behavior may change at any time without notice.
+
 ## Features
 
 - Board capability metadata and peripheral resource types.

@@ -6,6 +6,8 @@
 Embassy-based, `no_std` board support for flight controllers, robotics, and prototyping.
 Requires Rust 1.92 or newer.
 
+**Experimental:** These crates are under active development. APIs and behavior may change at any time without notice.
+
 | Crate | Board | API docs |
 | --- | --- | --- |
 | [tbs-lucid-h7-bsp](https://crates.io/crates/tbs-lucid-h7-bsp) | [TBS Lucid H7](tbs-lucid-h7-bsp/README.md), STM32H743 | [docs.rs](https://docs.rs/tbs-lucid-h7-bsp) |

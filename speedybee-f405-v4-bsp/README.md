@@ -8,6 +8,8 @@
 Embassy-based, `no_std` board support for the **[SpeedyBee F405 V4 (STM32F405)](https://www.speedybee.com/speedybee-f405-v4-bls-55a-30x30-fc-esc-stack/)**.
 Rust 1.92+ · `thumbv7em-none-eabihf` · DFU flashing.
 
+**Experimental:** This crate is under active development. APIs and behavior may change at any time without notice.
+
 ![SpeedyBee F405 V4 flight controller](https://raw.githubusercontent.com/jettify/uf-bsp/master/docs/speedybee-f405-v4.jpg)
 
 ## Features
