@@ -63,6 +63,12 @@ async fn main(spawner: embassy_executor::Spawner) {
 }
 ```
 
+The barometer uses `board.baro.new_i2c_blocking(config)` without DMA
+or interrupt bindings. The `baro_i2c` example yields with Embassy timers
+between initialization polls and sample checks; each I2C transaction is
+blocking. This preserves the board's existing DMA allocations for other
+peripherals, including SD-card SPI3.
+
 | Example | Purpose | Required feature |
 | --- | --- | --- |
 | `blinky` | LED output | — |

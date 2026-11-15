@@ -350,13 +350,77 @@ pub struct I2cParts<'d> {
     pub i2c1_sda: hal::Peri<'d, pins::I2c1Sda>,
 }
 
+/// Interrupt bindings for I2C2 and the default barometer DMA channels.
+pub trait BaroIrqs:
+    hal::interrupt::typelevel::Binding<
+        hal::interrupt::typelevel::I2C2_EV,
+        hal::i2c::EventInterruptHandler<hal::peripherals::I2C2>,
+    > + hal::interrupt::typelevel::Binding<
+        hal::interrupt::typelevel::I2C2_ER,
+        hal::i2c::ErrorInterruptHandler<hal::peripherals::I2C2>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+    > + hal::interrupt::typelevel::Binding<
+        <hal::peripherals::DMA2_CH7 as hal::dma::ChannelInstance>::Interrupt,
+        hal::dma::InterruptHandler<hal::peripherals::DMA2_CH7>,
+    >
+{
+}
+
+impl<T> BaroIrqs for T where
+    T: hal::interrupt::typelevel::Binding<
+            hal::interrupt::typelevel::I2C2_EV,
+            hal::i2c::EventInterruptHandler<hal::peripherals::I2C2>,
+        > + hal::interrupt::typelevel::Binding<
+            hal::interrupt::typelevel::I2C2_ER,
+            hal::i2c::ErrorInterruptHandler<hal::peripherals::I2C2>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA2_CH0 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH0>,
+        > + hal::interrupt::typelevel::Binding<
+            <hal::peripherals::DMA2_CH7 as hal::dma::ChannelInstance>::Interrupt,
+            hal::dma::InterruptHandler<hal::peripherals::DMA2_CH7>,
+        >
+{
+}
+
 pub struct BaroParts<'d> {
     pub i2c2: hal::Peri<'d, hal::peripherals::I2C2>,
     pub i2c2_scl: hal::Peri<'d, pins::I2c2Scl>,
     pub i2c2_sda: hal::Peri<'d, pins::I2c2Sda>,
+    /// Default async I2C2 transmit DMA stream (DMA2 stream 0).
+    pub dma_tx: hal::Peri<'d, hal::peripherals::DMA2_CH0>,
+    /// Default async I2C2 receive DMA stream (DMA2 stream 7).
+    pub dma_rx: hal::Peri<'d, hal::peripherals::DMA2_CH7>,
 }
 
 impl<'d> BaroParts<'d> {
+    /// Construct async I2C2 using application-owned interrupt bindings.
+    ///
+    /// Bind the `baro` group with [`crate::bind_board_interrupts!`] to use
+    /// the default DMA2 streams 0 (TX) and 7 (RX). Public fields allow
+    /// constructing the bus directly with a custom DMA mapping.
+    pub fn new_i2c<I>(
+        self,
+        irqs: I,
+        config: hal::i2c::Config,
+    ) -> hal::i2c::I2c<'d, hal::mode::Async, hal::i2c::Master>
+    where
+        I: BaroIrqs + 'd,
+    {
+        hal::i2c::I2c::new(
+            self.i2c2,
+            self.i2c2_scl,
+            self.i2c2_sda,
+            self.dma_tx,
+            self.dma_rx,
+            irqs,
+            config,
+        )
+    }
+
+    /// Construct blocking I2C2 without interrupt bindings or DMA.
     pub fn new_i2c_blocking(
         self,
         config: hal::i2c::Config,

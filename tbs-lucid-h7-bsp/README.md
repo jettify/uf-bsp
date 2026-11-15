@@ -15,7 +15,7 @@ Rust 1.92+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
 ## Features
 
 - Primary SPI1 and secondary SPI4 IMU resources with DMA and async DRDY inputs.
-- Barometer I2C, ADC1/ADC3, and battery/current sensing pins.
+- Blocking and async DMA barometer I2C, ADC1/ADC3, and battery/current sensing pins.
 - USB CDC, USART6 receiver, additional UARTs, OSD SPI2, and SDMMC resources.
 - LEDs, motor output pins, board metadata, and unassigned peripherals.
 - Clock presets for 480 MHz CPU and USB; Embassy time driver on TIM12.
@@ -63,11 +63,41 @@ async fn main(_spawner: embassy_executor::Spawner) {
 
 ```
 
+Async barometer I2C uses application-owned interrupt bindings:
+
+```rust,ignore
+use tbs_lucid_h7_bsp as bsp;
+
+bsp::bind_board_interrupts!(struct Irqs {
+    baro;
+});
+
+let p = bsp::hal::init(bsp::config());
+let board = bsp::Board::new(p);
+let mut config = bsp::hal::i2c::Config::default();
+config.frequency = bsp::hal::time::Hertz::khz(400);
+let i2c = board.baro.new_i2c(Irqs, config);
+// Pass i2c to uf_dps3xx::AsyncDps3xx with its `async` feature enabled.
+```
+
+The default mapping is I2C2 on PB10/PB11 with DMA2 stream 0 for TX
+and stream 7 for RX. Bind `baro;` once per application; it emits I2C2
+event/error and both DMA handlers. The raw `board.baro` fields remain
+available for custom DMA mappings and interrupt bindings.
+`new_i2c_blocking(config)` remains available without interrupts or DMA.
+
+This allocation avoids the Lucid target's Betaflight motor DMA mappings
+(DMA1 streams 0–7 for individual channels and DMA2 streams 3–5 for timer
+updates). DMA2 stream 0 is Betaflight's default LED-strip mapping; an async
+LED-strip implementation must choose a different stream when using this
+barometer mapping.
+
 | Example | Purpose | Required feature |
 | --- | --- | --- |
 | `blinky` | LED output | — |
 | `imu_spi` | IMU FIFO sampling at 1 kHz, RTT logging | `sensor-examples` |
 | `baro_i2c` | Pressure and temperature readings | `sensor-examples` |
+| `baro_i2c_async` | Async DMA barometer bus, product/revision ID | — |
 | `self_check` | Peripheral checks and USB reports | — |
 | `usb_serial` | USB CDC serial | — |
 | `clock_report` | Clock configuration report | — |
