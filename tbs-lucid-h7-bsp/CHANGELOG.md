@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/jettify/uf-bsp/compare/tbs-lucid-h7-bsp-v0.1.0...tbs-lucid-h7-bsp-v0.2.0) - 2026-11-16
+
+### Added
+
+- Update lucid demo with async i2c
+
+### Other
+
+- Bump msrv.
+
 ## [0.1.0](https://github.com/jettify/uf-bsp/releases/tag/tbs-lucid-h7-bsp-v0.1.0) - 2026-11-13
 
 ### Added

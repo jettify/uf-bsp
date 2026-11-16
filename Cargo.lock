@@ -1097,7 +1097,7 @@ checksum = "149309498a5f7334b12ddae0cad8aba81ce785fe91755068867e017cf98fee46"
 
 [[package]]
 name = "speedybee-f405-v4-bsp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -1210,7 +1210,7 @@ dependencies = [
 
 [[package]]
 name = "tbs-lucid-h7-bsp"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "cortex-m",
  "cortex-m-rt",
@@ -1335,7 +1335,7 @@ dependencies = [
 
 [[package]]
 name = "uf-bsp-core"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "embassy-usb",
 ]
