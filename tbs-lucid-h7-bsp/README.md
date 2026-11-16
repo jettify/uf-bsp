@@ -6,7 +6,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/jettify/uf-bsp/blob/master/LICENSE)
 
 Embassy-based, `no_std` board support for the [**TBS Lucid H7 (STM32H743)**](https://www.team-blacksheep.com/products/prod:lucid_h7).
-Rust 1.92+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
+Rust 1.95+ · `thumbv7em-none-eabihf` · SWD or DFU flashing.
 
 **Experimental:** This crate is under active development. APIs and behavior may change at any time without notice.
 

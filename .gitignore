@@ -3,3 +3,4 @@
 /speedybee-f405-v4-bsp/target
 target-local
 /lcov.info
+.DS_Store

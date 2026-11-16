@@ -4,7 +4,7 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](https://github.com/jettify/uf-bsp/blob/master/LICENSE)
 
 Embassy-based, `no_std` board support for flight controllers, robotics, and prototyping.
-Requires Rust 1.92 or newer.
+Requires Rust 1.95 or newer.
 
 **Experimental:** These crates are under active development. APIs and behavior may change at any time without notice.
 
