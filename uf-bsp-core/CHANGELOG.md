@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0](https://github.com/jettify/uf-bsp/compare/uf-bsp-core-v0.1.0...uf-bsp-core-v0.2.0) - 2026-11-16
+
+### Other
+
+- Bump msrv.
+
 ## [0.1.0](https://github.com/jettify/uf-bsp/releases/tag/uf-bsp-core-v0.1.0) - 2026-11-13
 
 ### Added
